@@ -1,0 +1,43 @@
+spring:
+  application:
+    name: blogr
+
+  logging: DEBUG
+
+
+  config:
+    activate:
+      on-profile: dev
+
+
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/blogrdb
+
+#---
+#Spring:
+#  config:
+#    activate:
+#      on-profile: prod
+#
+##data:
+##  mongodb:
+##    uri: MONGO_CLOUD_CONNECTION_STRING
+##    username: ${MONGO_USER}
+##    password: ${MONGO_PASS}
+#
+#---
+#
+#Spring:
+#  config:
+#    activate:
+#      on-profile: test
+#
+##data:
+##  mongodb:
+#    uri: mongodb://localhost:27017/blogrtestdb
+
+
+
+
+
