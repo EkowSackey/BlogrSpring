@@ -1,10 +1,18 @@
 package com.example.demo.controllers;
 
 import com.example.demo.domain.Post;
+import com.example.demo.dto.CreatePostRequest;
+import com.example.demo.dto.PostResponse;
+import com.example.demo.dto.UpdatePostRequest;
+import com.example.demo.mapper.PostMapper;
 import com.example.demo.services.PostService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,37 +27,51 @@ import java.util.Optional;
 @RequestMapping(path = "/api/v1/posts", produces = "application/json")
 public class PostController {
 
-    @Autowired
-    private PostService postService;
+    private final PostService postService;
 
-    @GetMapping("/")
-    public ResponseEntity<?> getAllPosts(){
-        var posts = postService.allPosts();
+    public PostController(PostService postService) {
+        this.postService = postService;
+    }
 
-        if (posts.isEmpty()){
-            return new ResponseEntity<String>("No Posts available.", HttpStatus.OK);
-        }
-        return new ResponseEntity<List<Post>>(postService.allPosts(), HttpStatus.OK);
+    @PostMapping()
+    public ResponseEntity<PostResponse> createPost(
+            @Valid @RequestBody CreatePostRequest request
+    ){
+        Post post = postService.createPost(request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(PostMapper.toResponse(post));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Optional<Post>> getPost(@PathVariable String id){
-        return new ResponseEntity<Optional<Post>>( postService.singlePost(id), HttpStatus.OK);
+    public ResponseEntity<PostResponse> getPost(@PathVariable String id){
+        Post post = postService.getPostById(id);
+        return ResponseEntity.ok(PostMapper.toResponse(post));
     }
 
-    @PostMapping("/")
-    public ResponseEntity<?> createPost(@Valid @RequestBody Map<String, Object> payload){
-        String title = String.valueOf(payload.get("title"));
-        String content = String.valueOf(payload.get("content"));
-        List<String> tags = (List<String>) payload.get("tags");
+    @GetMapping
+    public ResponseEntity<Page<PostResponse>> getAllPosts(
+            @PageableDefault(size = 10, sort = "dateCreated", direction = Sort.Direction.DESC)
+            Pageable pageable
+    ) {
+        Page<PostResponse> response =
+                postService.getAllPosts(pageable)
+                        .map(PostMapper::toResponse);
 
-        Post createdPost = postService.createPost(title, content, tags);
-        return new ResponseEntity<>(createdPost, HttpStatus.CREATED);
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<PostResponse> updatePost(
+            @PathVariable String id,
+            @Valid @RequestBody UpdatePostRequest request
+    ) {
+        Post updated = postService.updatePost(id, request);
+        return ResponseEntity.ok(PostMapper.toResponse(updated));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deletePost(@PathVariable String id){
-        Optional<Post> deletedPost = postService.deletePost(id);
-        return new ResponseEntity<>(deletedPost, HttpStatus.OK);    }
-
+    public ResponseEntity<Void> deletePost(@PathVariable String id) {
+        postService.deletePost(id);
+        return ResponseEntity.noContent().build();
+    }
 }

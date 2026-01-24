@@ -15,11 +15,15 @@ import java.util.Date;
 @Service
 public class CommentService {
 
-    @Autowired
-    private CommentRepository commentRepo;
+
+    private final CommentRepository commentRepo;
 
     @Autowired
     private MongoTemplate mongoTemplate;
+
+    public CommentService(CommentRepository commentRepo) {
+        this.commentRepo = commentRepo;
+    }
 
     public Comment createComment(String commentBody, String postId){
         Comment comment = new Comment(commentBody);

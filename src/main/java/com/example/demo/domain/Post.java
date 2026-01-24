@@ -1,15 +1,9 @@
 package com.example.demo.domain;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.bson.types.ObjectId;
-import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
@@ -25,23 +19,15 @@ public class Post{
     @Id
     private String postId;
 
-    @NotBlank
-    @Size(min=5, message = "Title must be at least 5 characters long")
     private String title;
 
-    @NotBlank
-    @Size(min=5, message = "Content must be at least 5 characters long")
     private String content;
 
-    @CreatedDate
     private Date dateCreated;
 
-
-    @LastModifiedDate
     private Date lastUpdate;
 
-
-    private ObjectId authorId;
+    private String authorId;
 
     @DocumentReference
     private List<Comment> comments;

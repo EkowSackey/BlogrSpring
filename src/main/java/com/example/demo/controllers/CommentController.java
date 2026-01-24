@@ -16,8 +16,12 @@ import java.util.Optional;
 @RequestMapping(path = "/api/v1/comments", produces = "application/json")
 public class CommentController {
 
-    @Autowired
-    private CommentService commentService;
+
+    private final CommentService commentService;
+
+    public CommentController(CommentService commentService) {
+        this.commentService = commentService;
+    }
 
     @PostMapping("/")
     public ResponseEntity<Comment> createComment(@Valid @RequestBody Map<String, String> payload){
