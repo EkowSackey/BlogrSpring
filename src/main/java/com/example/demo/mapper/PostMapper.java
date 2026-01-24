@@ -13,7 +13,7 @@ public class PostMapper {
                 post.getTitle(),
                 post.getContent(),
                 post.getAuthorId(),
-                post.getTags(),
+                post.getTagSlugs(),
                 post.getComments(),
                 post.getReviews(),
                 post.getDateCreated(),

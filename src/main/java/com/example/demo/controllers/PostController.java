@@ -4,11 +4,11 @@ import com.example.demo.domain.Post;
 import com.example.demo.dto.CreatePostRequest;
 import com.example.demo.dto.PostResponse;
 import com.example.demo.dto.UpdatePostRequest;
+import com.example.demo.exception.BadRequestException;
 import com.example.demo.mapper.PostMapper;
 import com.example.demo.services.PostService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -50,11 +50,25 @@ public class PostController {
 
     @GetMapping
     public ResponseEntity<Page<PostResponse>> getAllPosts(
+            @RequestParam(required = false) String authorId,
+            @RequestParam(required = false) String tag,
             @PageableDefault(size = 10, sort = "dateCreated", direction = Sort.Direction.DESC)
             Pageable pageable
     ) {
-        Page<PostResponse> response =
-                postService.getAllPosts(pageable)
+
+        if (authorId != null && tag !=null){
+            throw new BadRequestException("Cannot filter by author and tag at the same time");
+        }
+
+        if (authorId != null){
+            Page<PostResponse> response = postService.getPostsByAuthor(authorId, pageable).map(PostMapper::toResponse);
+            return ResponseEntity.ok(response);
+        }
+        if (tag != null){
+            Page<PostResponse> response = postService.getPostsByTag(tag, pageable).map(PostMapper::toResponse);
+            return ResponseEntity.ok(response);
+        }
+        Page<PostResponse> response =postService.getAllPosts(pageable)
                         .map(PostMapper::toResponse);
 
         return ResponseEntity.ok(response);

@@ -36,6 +36,13 @@ public class GlobalExceptionHandler {
                 .body(new ApiError("VALIDATION_ERROR", errors));
     }
 
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ApiError> handleBadRequest(BadRequestException ex) {
+        return ResponseEntity
+                .badRequest()
+                .body(new ApiError(ex.getMessage(), ex));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleGeneric(Exception ex) {
         log.error("Unhandled exception", ex);

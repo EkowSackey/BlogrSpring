@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
@@ -27,20 +28,21 @@ public class Post{
 
     private Date lastUpdate;
 
+    @Indexed
     private String authorId;
 
     @DocumentReference
     private List<Comment> comments;
 
-    private List<Tag> tags;
+    @Indexed
+    private List<String> tagSlugs;
     private List<Review> reviews;
 
-    public Post(String title, String content, List<Tag> tags){
+    public Post(String title, String content, List<String> tags){
         this.title = title;
         this.content = content;
-        this.tags = new ArrayList<>(tags);
+        this.tagSlugs = new ArrayList<>(tags);
     }
-
 }
 
 
