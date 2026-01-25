@@ -11,7 +11,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 
 @Slf4j
@@ -27,7 +29,9 @@ public class PostService {
 
     public Post createPost(CreatePostRequest request){
 
-        Post post = new Post(request.getTitle(), request.getContent(), request.getTags());
+        List<String> tags = (request.getTags() == null) ? new ArrayList<>() : request.getTags();
+
+        Post post = new Post(request.getTitle(), request.getContent(), tags);
         post.setDateCreated(Date.from(Instant.now()));
         post.setLastUpdate(Date.from(Instant.now()));
 //        todo: replace with userId at security

@@ -9,7 +9,6 @@ import com.example.demo.mapper.PostMapper;
 import com.example.demo.services.PostService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -17,11 +16,6 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
 
 @Slf4j
 @RestController
@@ -54,7 +48,7 @@ public class PostController {
             @RequestParam(required = false) String authorId,
             @RequestParam(required = false) String tag,
             @PageableDefault(size = 10, sort = "dateCreated", direction = Sort.Direction.DESC)
-            @ParameterObject Pageable pageable
+            Pageable pageable
     ) {
 
         if (authorId != null && tag !=null){
@@ -70,7 +64,7 @@ public class PostController {
             return ResponseEntity.ok(response);
         }
         Page<PostResponse> response =postService.getAllPosts(pageable)
-                        .map(PostMapper::toResponse);
+                .map(PostMapper::toResponse);
 
         return ResponseEntity.ok(response);
     }
