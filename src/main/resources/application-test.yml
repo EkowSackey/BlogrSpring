@@ -3,6 +3,6 @@ spring:
     mongodb:
       uri: mongodb://localhost:27017/blogr_test
 
-logging:
-  level:
-    root: INFO
+  logging:
+    level:
+      com.example.demo.aspect: DEBUG

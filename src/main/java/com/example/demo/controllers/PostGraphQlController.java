@@ -2,6 +2,7 @@ package com.example.demo.controllers;
 
 import com.example.demo.domain.Post;
 import com.example.demo.dto.CreatePostRequest;
+import com.example.demo.dto.PostPageResponse;
 import com.example.demo.dto.PostResponse;
 import com.example.demo.dto.UpdatePostRequest;
 import com.example.demo.exception.BadRequestException;
@@ -16,6 +17,7 @@ import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
 
+import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -34,7 +36,7 @@ public class PostGraphQlController {
     }
 
     @QueryMapping
-    public Map<String, Object> getAllPosts(
+    public PostPageResponse getAllPosts(
             @Argument String authorId,
             @Argument String tag,
             @Argument Integer page,
@@ -59,11 +61,16 @@ public class PostGraphQlController {
             postPage = postService.getAllPosts(pageable);
         }
 
-        return Map.of(
-                "content", postPage.getContent().stream().map(PostMapper::toResponse).toList(),
-                "totalPages", postPage.getTotalPages(),
-                "totalElements", postPage.getTotalElements(),
-                "isLast", postPage.isLast()
+        // Convert Page<Post> to PostPageResponse
+        List<PostResponse> content = postPage.getContent().stream()
+                .map(PostMapper::toResponse)
+                .toList();
+
+        return new PostPageResponse(
+                content,
+                postPage.getTotalPages(),
+                postPage.getTotalElements(),
+                postPage.isLast()
         );
     }
 

@@ -1,22 +1,17 @@
 spring:
   application:
     name: blogr
-
   graphql:
     graphiql:
       enabled: true
       path: /graphiql
     path: /graphql
 
+logging:
+  level:
+    com.example.demo.aspect: DEBUG
+    org.springframework.aop: DEBUG
+
 springdoc:
   packages-to-scan: com.example.demo.controllers
   paths-to-exclude: /graphql
-
-
-
-
-
-
-
-
-
