@@ -1,0 +1,42 @@
+type Query {
+
+    getPost(id:ID): PostResponse
+
+    getAllPosts(authorId: String, tag: String, page: Int, size: Int, sort: String): PostPage
+}
+
+type Mutation {
+    createPost(request: CreatePostInput!): PostResponse
+    updatePost(id: ID! request: UpdatePostInput!): PostResponse
+    deletePost(id: ID!): Boolean
+}
+
+input CreatePostInput {
+    title: String!
+    content: String!
+    authorId: String!
+    tags: [String]
+}
+
+input UpdatePostInput {
+    title: String!
+    content: String!
+    tags: [String]!
+}
+
+type PostResponse {
+    id: ID
+    title: String
+    content: String
+    authorId: String
+    tags: [String]
+    createdAt: String
+    lastUpdate: String
+}
+
+type PostPage {
+    content: [PostResponse]
+    totalPages: Int
+    totalElements: Int
+    isLast: Boolean
+}

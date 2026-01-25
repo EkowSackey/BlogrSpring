@@ -2,6 +2,12 @@ spring:
   application:
     name: blogr
 
+  graphql:
+    graphiql:
+      enabled: true
+      path: /graphiql
+    path: /graphql
+
 
 
 
