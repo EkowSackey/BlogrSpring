@@ -9,6 +9,7 @@ import com.example.demo.mapper.PostMapper;
 import com.example.demo.services.PostService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -48,7 +49,7 @@ public class PostController {
             @RequestParam(required = false) String authorId,
             @RequestParam(required = false) String tag,
             @PageableDefault(size = 10, sort = "dateCreated", direction = Sort.Direction.DESC)
-            Pageable pageable
+            @ParameterObject Pageable pageable
     ) {
 
         if (authorId != null && tag !=null){

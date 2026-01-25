@@ -8,6 +8,10 @@ spring:
       path: /graphiql
     path: /graphql
 
+springdoc:
+  packages-to-scan: com.example.demo.controllers
+  paths-to-exclude: /graphql
+
 
 
 
