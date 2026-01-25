@@ -6,9 +6,13 @@ import com.example.demo.dto.UpdatePostRequest;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repositories.PostRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -27,6 +31,7 @@ public class PostService {
         this.postRepo = postRepo;
     }
 
+    @CacheEvict(value = "post-pages", allEntries = true)
     public Post createPost(CreatePostRequest request){
 
         List<String> tags = (request.getTags() == null) ? new ArrayList<>() : request.getTags();
@@ -40,6 +45,7 @@ public class PostService {
         return post;
     }
 
+    @Cacheable(value = "posts", key = "#id")
     public Post getPostById(String id){
         return postRepo.findPostByPostId(id)
                 .orElseThrow(
@@ -47,6 +53,7 @@ public class PostService {
                 );
     }
 
+    @Cacheable(value = "post-pages", key = "#pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<Post> getAllPosts(Pageable pageable) {
         return postRepo.findAll(pageable);
     }
@@ -59,6 +66,8 @@ public class PostService {
         return postRepo.findByTagSlugsContaining(tag, pageable);
     }
 
+    @Transactional
+    @CachePut(value = "posts", key = "#id")
     public Post updatePost(String id, UpdatePostRequest request){
         Post post = getPostById(id);
 
@@ -70,6 +79,7 @@ public class PostService {
         return postRepo.save(post);
     }
 
+    @CacheEvict(value = "posts", key = "#id")
     public void deletePost(String id){
         postRepo.deleteByPostId(id);
     }
