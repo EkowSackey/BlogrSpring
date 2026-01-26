@@ -1,35 +1,36 @@
 package com.example.demo.domain;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.util.Date;
 
 @Data
 @Document(collection = "users")
-@AllArgsConstructor
-@NoArgsConstructor(access= AccessLevel.PRIVATE, force=true)
+@NoArgsConstructor
 public class User{
-    @NotNull
+
     @Id
     private String userId;
 
-    @NotNull
-    @Size(min = 4, message = "Username must be at least 4 characters")
-    String username;
+    @Indexed(unique = true)
+    private String username;
 
-    @NotNull
-    @Email
-    String email;
+    @Indexed(unique = true)
+    private String email;
 
-    @NotNull
-    String password;
+    private String password;
+    private String role;
+    private Date createdAt;
 
-    String role;
+    public User(String username, String email, String password){
+        this.username = username;
+        this.email = email;
+        this.password = password;
+        this.role = String.valueOf(Role.REGULAR);
+        this.createdAt = new Date();
+    }
 }

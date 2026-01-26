@@ -3,12 +3,16 @@ type Query {
     getPost(id:ID): PostResponse
 
     getAllPosts(authorId: String, tag: String, page: Int, size: Int, sort: String): PostPage
+
+    getUser(id: ID!): UserResponse
 }
 
 type Mutation {
     createPost(request: CreatePostInput!): PostResponse
     updatePost(id: ID! request: UpdatePostInput!): PostResponse
     deletePost(id: ID!): Boolean
+
+    registerUser(request: UserRegistrationInput!): UserResponse
 }
 
 input CreatePostInput {
@@ -22,6 +26,12 @@ input UpdatePostInput {
     title: String!
     content: String!
     tags: [String]!
+}
+
+input UserRegistrationInput {
+    username: String!
+    email: String
+    roles: [String]
 }
 
 type PostResponse {
@@ -39,4 +49,11 @@ type PostPage {
     totalPages: Int
     totalElements: Int
     isLast: Boolean
+}
+
+type UserResponse{
+    id: ID
+    username: String
+    email: String
+    role: String
 }
