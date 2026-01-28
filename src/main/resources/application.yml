@@ -15,3 +15,6 @@ logging:
 springdoc:
   packages-to-scan: com.example.demo.controllers
   paths-to-exclude: /graphql
+
+jwt:
+  secret: 38ffce28f6aeda91a4235b5fe7c4ffa75762880a53d01aac846069858c75274a

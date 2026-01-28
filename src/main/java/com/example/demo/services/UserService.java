@@ -26,8 +26,9 @@ public class UserService {
             throw new BadRequestException("Username already taken");
         }
 
-        User user = new User(request.getUsername(), request.getEmail(), request.getPassword());
-        return userRepo.save(user);
+//        User user = new User(request.getUsername(), request.getEmail(), request.getPassword());
+//        return userRepo.save(user);
+        return null;
     }
 
     @Cacheable(value = "users", key = "#userid")
