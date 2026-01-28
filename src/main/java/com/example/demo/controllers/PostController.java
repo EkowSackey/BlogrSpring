@@ -3,6 +3,7 @@ package com.example.demo.controllers;
 import com.example.demo.domain.Post;
 import com.example.demo.dto.CreatePostRequest;
 import com.example.demo.dto.PostResponse;
+import com.example.demo.dto.ReviewRequest;
 import com.example.demo.dto.UpdatePostRequest;
 import com.example.demo.exception.BadRequestException;
 import com.example.demo.mapper.PostMapper;
@@ -77,6 +78,12 @@ public class PostController {
     ) {
         Post updated = postService.updatePost(id, request);
         return ResponseEntity.ok(PostMapper.toResponse(updated));
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<PostResponse> reviewPost( @Valid ReviewRequest request, @PathVariable String id){
+        Post post= postService.addReview(id, request);
+        return ResponseEntity.ok(PostMapper.toResponse(post));
     }
 
     @DeleteMapping("/{id}")

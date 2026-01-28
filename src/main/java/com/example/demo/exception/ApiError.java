@@ -1,7 +1,10 @@
 package com.example.demo.exception;
 
+import lombok.Getter;
+
 import java.time.Instant;
 
+@Getter
 public class ApiError {
 
     private final String code;
@@ -12,17 +15,5 @@ public class ApiError {
         this.code = code;
         this.message = message;
         this.timestamp = Instant.now();
-    }
-
-    public String getCode(){
-        return code;
-    }
-
-    public Object getMessage() {
-        return message;
-    }
-
-    public Instant getTimestamp() {
-        return timestamp;
     }
 }

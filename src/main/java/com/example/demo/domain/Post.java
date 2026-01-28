@@ -36,6 +36,8 @@ public class Post{
 
     @Indexed
     private List<String> tagSlugs;
+
+    @DocumentReference
     private List<Review> reviews;
 
     public Post(String title, String content, List<String> tags){

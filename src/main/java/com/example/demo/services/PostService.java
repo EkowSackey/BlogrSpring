@@ -1,8 +1,11 @@
 package com.example.demo.services;
 
 import com.example.demo.domain.Post;
+import com.example.demo.domain.Review;
 import com.example.demo.dto.CreatePostRequest;
+import com.example.demo.dto.ReviewRequest;
 import com.example.demo.dto.UpdatePostRequest;
+import com.example.demo.exception.BadRequestException;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repositories.PostRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +21,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 
 @Slf4j
@@ -79,9 +83,23 @@ public class PostService {
         return postRepo.save(post);
     }
 
+    public Post addReview(String id, ReviewRequest request){
+        Post post = getPostById(id);
+
+        if (Objects.equals(post.getAuthorId(), request.getUserId())){
+            throw new BadRequestException("Author cannot review their own post");
+        }
+        List<Review> reviews = post.getReviews();
+
+        Review review = new Review(request.getStars(), request.getUserId(), request.getPostId());
+        reviews.add(review);
+
+        post.setReviews(reviews);
+        return postRepo.save(post);
+    }
+
     @CacheEvict(value = "posts", key = "#id")
     public void deletePost(String id){
         postRepo.deleteByPostId(id);
     }
-
    }
