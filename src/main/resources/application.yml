@@ -7,6 +7,14 @@ spring:
       path: /graphiql
     path: /graphql
 
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            client-id: ${GITHUB_CLIENT_ID}
+            client-secret: ${GITHUB_CLIENT_SECRET}
+
 logging:
   level:
     com.example.demo.aspect: DEBUG
@@ -17,4 +25,4 @@ springdoc:
   paths-to-exclude: /graphql
 
 jwt:
-  secret: 38ffce28f6aeda91a4235b5fe7c4ffa75762880a53d01aac846069858c75274a
+  secret: ${JWT_SECRET}

@@ -28,13 +28,13 @@ public class UserController {
         this.userService = userService;
     }
 
-    @PostMapping("/register")
+    @PostMapping("/auth/register")
     public ResponseEntity<UserResponse> register(@Valid @RequestBody RegisterUserRequest request){
         User user = userService.registerUser(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(UserMapper.toResponse(user));
     }
 
-    @PostMapping("/login")
+    @PostMapping("/auth/login")
     public ResponseEntity<String> login(@Valid @RequestBody AuthenticateUserRequest request){
         return ResponseEntity.ok(userService.authenticateUser(request));
     }
