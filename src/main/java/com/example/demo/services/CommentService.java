@@ -9,12 +9,12 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 
 @Service
 public class CommentService {
-
 
     private final CommentRepository commentRepo;
 
@@ -25,6 +25,7 @@ public class CommentService {
         this.commentRepo = commentRepo;
     }
 
+    @Transactional
     public Comment createComment(String commentBody, String postId){
         Comment comment = new Comment(commentBody);
 //        todo: replace with user id

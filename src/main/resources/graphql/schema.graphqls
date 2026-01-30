@@ -5,14 +5,16 @@ type Query {
     getAllPosts(authorId: String, tag: String, page: Int, size: Int, sort: String): PostPage
 
     getUser(id: ID!): UserResponse
+
 }
 
 type Mutation {
     createPost(request: CreatePostInput!): PostResponse
     updatePost(id: ID! request: UpdatePostInput!): PostResponse
     deletePost(id: ID!): Boolean
-
     registerUser(request: UserRegistrationInput!): UserResponse
+    createComment(request: CreateCommentInput!) : CommentResponse
+    deleteComment(id: ID): Boolean
 }
 
 input CreatePostInput {
@@ -34,6 +36,11 @@ input UserRegistrationInput {
     roles: [String]
 }
 
+input CreateCommentInput{
+    commentBody: String!
+    postId: String!
+}
+
 type PostResponse {
     id: ID
     title: String
@@ -42,6 +49,14 @@ type PostResponse {
     tags: [String]
     createdAt: String
     lastUpdate: String
+}
+
+type CommentResponse {
+    id: ID
+    content: String
+    authorId: String
+    parentId: String
+    createdAt: String
 }
 
 type PostPage {

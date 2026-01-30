@@ -83,6 +83,7 @@ public class PostService {
         return postRepo.save(post);
     }
 
+    @CacheEvict(value = "posts", key = "#id")
     public Post addReview(String id, ReviewRequest request){
         Post post = getPostById(id);
 
