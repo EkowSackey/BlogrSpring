@@ -43,6 +43,20 @@ public class GlobalExceptionHandler {
                 .body(new ApiError(ex.getMessage(), ex));
     }
 
+    @ExceptionHandler(DuplicateUsernameException.class)
+    public ResponseEntity<ApiError> handleDuplicateUsername(DuplicateUsernameException ex) {
+        return ResponseEntity
+                .badRequest()
+                .body(new ApiError(ex.getMessage(), ex));
+    }
+
+    @ExceptionHandler(DuplicateEmailException.class)
+    public ResponseEntity<ApiError> handleDuplicateEmail(DuplicateEmailException ex) {
+        return ResponseEntity
+                .badRequest()
+                .body(new ApiError(ex.getMessage(), ex));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleGeneric(Exception ex) {
         log.error("Unhandled exception", ex);

@@ -13,6 +13,6 @@ public interface PostRepository extends MongoRepository<Post, String> {
 
     Optional<Post> findPostByPostId(String postId);
     void deleteByPostId(String postId);
-    Page<Post> findByAuthorId(String authorId, Pageable pageable);
+    Page<Post> findByAuthor(String authorUsername, Pageable pageable);
     Page<Post> findByTagSlugsContaining(String tag, Pageable pageable);
 }

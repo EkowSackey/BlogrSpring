@@ -15,7 +15,7 @@ public class PostResponse {
     private String id;
     private String title;
     private String content;
-    private String authorId;
+    private String author;
     private List<String> tags;
     private List<Comment> comments;
     private List<Review> reviews;

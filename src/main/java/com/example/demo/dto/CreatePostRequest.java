@@ -21,8 +21,5 @@ public class CreatePostRequest {
     @Size(min=5, message = "Content must be at least 5 characters long")
     private String content;
 
-    @NotBlank
-    private String authorId;
-
     private List<String> tags;
 }

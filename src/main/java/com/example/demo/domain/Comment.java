@@ -20,7 +20,8 @@ public class Comment{
 
     private String content;
 
-    private String authorId;
+    @NotNull
+    private String author;
 
     private String parentId;
 

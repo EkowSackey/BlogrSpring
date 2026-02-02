@@ -1,18 +1,20 @@
 package com.example.demo.controllers;
 
-import com.example.demo.domain.Post;
 import com.example.demo.domain.User;
-import com.example.demo.dto.PostResponse;
-import com.example.demo.dto.UserRegistrationRequest;
+import com.example.demo.dto.AuthenticateUserRequest;
+import com.example.demo.dto.RegisterUserRequest;
 import com.example.demo.dto.UserResponse;
-import com.example.demo.mapper.PostMapper;
 import com.example.demo.mapper.UserMapper;
 import com.example.demo.services.UserService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -26,10 +28,26 @@ public class UserController {
         this.userService = userService;
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<UserResponse> register(@Valid @RequestBody UserRegistrationRequest request){
+    @PostMapping("/auth/register")
+    public ResponseEntity<UserResponse> register(@Valid @RequestBody RegisterUserRequest request){
         User user = userService.registerUser(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(UserMapper.toResponse(user));
+    }
+
+    @PostMapping("/auth/login")
+    public ResponseEntity<String> login(@Valid @RequestBody AuthenticateUserRequest request){
+        return ResponseEntity.ok(userService.authenticateUser(request));
+    }
+
+    @GetMapping("/")
+    public ResponseEntity<Page<UserResponse>> getAllUsers(
+            @PageableDefault(size = 10, sort = "dateCreated", direction = Sort.Direction.DESC)
+            @ParameterObject Pageable pageable
+            ){
+        Page<UserResponse> response = userService.getAllUsers(pageable)
+                .map(UserMapper::toResponse);
+
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")

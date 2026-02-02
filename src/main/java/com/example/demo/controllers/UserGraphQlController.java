@@ -1,6 +1,6 @@
 package com.example.demo.controllers;
 
-import com.example.demo.dto.UserRegistrationRequest;
+import com.example.demo.dto.RegisterUserRequest;
 import com.example.demo.dto.UserResponse;
 import com.example.demo.mapper.UserMapper;
 import com.example.demo.services.UserService;
@@ -23,7 +23,7 @@ public class UserGraphQlController {
     }
 
     @MutationMapping
-    public UserResponse registerUser(@Argument UserRegistrationRequest request) {
+    public UserResponse registerUser(@Argument RegisterUserRequest request) {
         return UserMapper.toResponse(userService.registerUser(request));
     }
 }

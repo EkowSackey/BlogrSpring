@@ -47,18 +47,18 @@ public class PostController {
 
     @GetMapping
     public ResponseEntity<Page<PostResponse>> getAllPosts(
-            @RequestParam(required = false) String authorId,
+            @RequestParam(required = false) String author,
             @RequestParam(required = false) String tag,
             @PageableDefault(size = 10, sort = "dateCreated", direction = Sort.Direction.DESC)
             @ParameterObject Pageable pageable
     ) {
 
-        if (authorId != null && tag !=null){
+        if (author != null && tag !=null){
             throw new BadRequestException("Cannot filter by author and tag at the same time");
         }
 
-        if (authorId != null){
-            Page<PostResponse> response = postService.getPostsByAuthor(authorId, pageable).map(PostMapper::toResponse);
+        if (author != null){
+            Page<PostResponse> response = postService.getPostsByAuthor(author, pageable).map(PostMapper::toResponse);
             return ResponseEntity.ok(response);
         }
         if (tag != null){

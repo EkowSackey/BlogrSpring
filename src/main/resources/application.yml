@@ -7,11 +7,22 @@ spring:
       path: /graphiql
     path: /graphql
 
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            client-id: ${GITHUB_CLIENT_ID}
+            client-secret: ${GITHUB_CLIENT_SECRET}
+
 logging:
   level:
     com.example.demo.aspect: DEBUG
-    org.springframework.aop: DEBUG
+#    org.springframework.aop: DEBUG
 
 springdoc:
   packages-to-scan: com.example.demo.controllers
   paths-to-exclude: /graphql
+
+jwt:
+  secret: ${JWT_SECRET}
