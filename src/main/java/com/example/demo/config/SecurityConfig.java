@@ -20,24 +20,40 @@ public class SecurityConfig {
     private final AuthenticationProvider authenticationProvider;
     private final JwtAuthFilter jwtAuthFilter;
 
+    private static final String[] PUBLIC_SWAGGER_PATHS = {
+            "/swagger-ui/**",
+            "/swagger-ui.html",
+            "/v3/api-docs/**",
+            "/swagger-resources/**",
+            "/webjars/**"
+    };
+
+    private static final String[] PUBLIC_GRAPHQL_PATHS = {
+            "/graphql/**",
+            "/graphiql/**"
+    };
+
+    private static final String[] PUBLIC_AUTH_PATHS = {
+            "/api/v1/users/auth/register",
+            "/api/v1/users/auth/login"
+    };
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .cors(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(httpRequest ->
-                        {
-                            httpRequest.requestMatchers("api/v1/users/auth/register", "api/v1/users/auth/login")
-                                    .permitAll();
-
-                            httpRequest.requestMatchers("api/v1/users/")
-                                    .hasAnyAuthority("ADMIN")
-                                    .anyRequest()
-                                    .authenticated();
-                        })
+                .authorizeHttpRequests(httpRequest -> {
+                    httpRequest.requestMatchers(PUBLIC_SWAGGER_PATHS).permitAll();
+                    httpRequest.requestMatchers(PUBLIC_GRAPHQL_PATHS).permitAll();
+                    httpRequest.requestMatchers(PUBLIC_AUTH_PATHS).permitAll();
+                    httpRequest.requestMatchers("/api/v1/users/").hasAnyAuthority("ADMIN");
+                    httpRequest.anyRequest().authenticated();
+                })
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-                .authenticationProvider(authenticationProvider);
+                .authenticationProvider(authenticationProvider)
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
 }
