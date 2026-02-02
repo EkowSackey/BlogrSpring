@@ -61,7 +61,6 @@ public class PostGraphQlController {
             postPage = postService.getAllPosts(pageable);
         }
 
-        // Convert Page<Post> to PostPageResponse
         List<PostResponse> content = postPage.getContent().stream()
                 .map(PostMapper::toResponse)
                 .toList();

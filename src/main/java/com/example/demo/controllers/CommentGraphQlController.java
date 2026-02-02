@@ -24,7 +24,7 @@ public class CommentGraphQlController {
     public ResponseEntity<CommentResponse> createComment(@Argument CreateCommentRequest request){
         Comment comment =  commentService.createComment(request.getCommentBody(), request.getPostId());
         return new ResponseEntity<CommentResponse>(
-                new CommentResponse(comment.getId(), comment.getContent(), comment.getAuthorId(), comment.getParentId(), String.valueOf(comment.getCreatedAt())),
+                new CommentResponse(comment.getId(), comment.getContent(), comment.getAuthor(), comment.getParentId(), String.valueOf(comment.getCreatedAt())),
                 HttpStatus.CREATED
         );
     }
