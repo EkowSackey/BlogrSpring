@@ -17,7 +17,7 @@ public class JwtService {
     @Value("${jwt.secret}")
     private String secret;
 
-    private Key generateSigningKey(){
+    Key generateSigningKey(){
         return Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret));
     }
 
