@@ -1,18 +1,16 @@
 package com.example.demo.controllers;
 
 import com.example.demo.domain.Comment;
+import com.example.demo.dto.CreateCommentRequest;
 import com.example.demo.services.CommentService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
-
 @RestController
 @RequestMapping(path = "/api/v1/comments", produces = "application/json")
 public class CommentController {
-
 
     private final CommentService commentService;
 
@@ -21,10 +19,10 @@ public class CommentController {
     }
 
     @PostMapping("/")
-    public ResponseEntity<Comment> createComment(@Valid @RequestBody Map<String, String> payload){
+    public ResponseEntity<Comment> createComment(@Valid @RequestBody CreateCommentRequest request){
         return new ResponseEntity<Comment>(commentService.createComment(
-                payload.get("commentBody"),
-                payload.get("postId")),
+                request.getCommentBody(),
+                request.getPostId()),
                 HttpStatus.CREATED);
     }
 

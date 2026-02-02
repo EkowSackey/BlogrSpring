@@ -11,12 +11,12 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 
 @Service
 public class CommentService {
-
 
     private final CommentRepository commentRepo;
 
@@ -27,6 +27,7 @@ public class CommentService {
         this.commentRepo = commentRepo;
     }
 
+    @Transactional
     public Comment createComment(String commentBody, String postId){
         Comment comment = new Comment(commentBody);
 
