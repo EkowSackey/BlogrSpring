@@ -18,7 +18,7 @@ spring:
 logging:
   level:
     com.example.demo.aspect: DEBUG
-    org.springframework.aop: DEBUG
+#    org.springframework.aop: DEBUG
 
 springdoc:
   packages-to-scan: com.example.demo.controllers

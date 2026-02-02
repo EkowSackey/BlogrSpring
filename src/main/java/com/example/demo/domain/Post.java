@@ -29,7 +29,7 @@ public class Post{
     private Date lastUpdate;
 
     @Indexed
-    private String authorId;
+    private String author;
 
     @DocumentReference
     private List<Comment> comments;
@@ -37,7 +37,6 @@ public class Post{
     @Indexed
     private List<String> tagSlugs;
 
-    @DocumentReference
     private List<Review> reviews;
 
     public Post(String title, String content, List<String> tags){

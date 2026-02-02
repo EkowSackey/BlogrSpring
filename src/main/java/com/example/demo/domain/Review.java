@@ -3,9 +3,9 @@ package com.example.demo.domain;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.annotation.Id;
 
-@Document(collection = "reviews")
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -16,5 +16,6 @@ public class Review{
         private String userId;
 
         private String postId;
+
 }
 

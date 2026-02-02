@@ -26,7 +26,7 @@ public class Comment{
     private String content;
 
     @NotNull
-    private String authorId;
+    private String author;
 
     @NotNull
     private String parentId;

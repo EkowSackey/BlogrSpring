@@ -26,7 +26,7 @@ public class SecurityConfig {
                 .cors(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(httpRequest ->
                         {
-                            httpRequest.requestMatchers("api/v1/users/register", "api/v1/users/login")
+                            httpRequest.requestMatchers("api/v1/users/auth/register", "api/v1/users/auth/login")
                                     .permitAll();
 
                             httpRequest.requestMatchers("api/v1/users/")
@@ -34,7 +34,6 @@ public class SecurityConfig {
                                     .anyRequest()
                                     .authenticated();
                         })
-                .oauth2Login(Customizer.withDefaults())
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)

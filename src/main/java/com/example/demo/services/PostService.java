@@ -14,6 +14,8 @@ import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,8 +45,11 @@ public class PostService {
         Post post = new Post(request.getTitle(), request.getContent(), tags);
         post.setDateCreated(Date.from(Instant.now()));
         post.setLastUpdate(Date.from(Instant.now()));
-//        todo: replace with userId at security
-        post.setAuthorId("author_id");
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String authorUsername = authentication.getName();
+        post.setAuthor(authorUsername);
+
         postRepo.save(post);
         return post;
     }
@@ -62,8 +67,8 @@ public class PostService {
         return postRepo.findAll(pageable);
     }
 
-    public Page<Post> getPostsByAuthor(String authorId, Pageable pageable){
-        return postRepo.findByAuthorId(authorId, pageable);
+    public Page<Post> getPostsByAuthor(String authorUsername, Pageable pageable){
+        return postRepo.findByAuthor(authorUsername, pageable);
     }
 
     public Page<Post> getPostsByTag(String tag, Pageable pageable){
@@ -75,23 +80,27 @@ public class PostService {
     public Post updatePost(String id, UpdatePostRequest request){
         Post post = getPostById(id);
 
-        post.setTitle(request.getTitle());
-        post.setContent(request.getContent());
+        post.setTitle(request.getTitle() + "(Edit)");
+        post.setContent(request.getContent() + "This post was last edited at: " + Date.from(Instant.now()));
         post.setTagSlugs(request.getTags());
         post.setLastUpdate(Date.from(Instant.now()));
 
         return postRepo.save(post);
     }
 
+
     public Post addReview(String id, ReviewRequest request){
         Post post = getPostById(id);
 
-        if (Objects.equals(post.getAuthorId(), request.getUserId())){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String user = authentication.getName();
+
+        if (Objects.equals(post.getAuthor(), user)){
             throw new BadRequestException("Author cannot review their own post");
         }
         List<Review> reviews = post.getReviews();
 
-        Review review = new Review(request.getStars(), request.getUserId(), request.getPostId());
+        Review review = new Review(request.getStars(), user, id);
         reviews.add(review);
 
         post.setReviews(reviews);
