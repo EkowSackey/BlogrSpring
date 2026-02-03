@@ -71,6 +71,7 @@ public class PostService {
         return postRepo.findByAuthor(authorUsername, pageable);
     }
 
+    @Cacheable(value = "posts", key = "#tag")
     public Page<Post> getPostsByTag(String tag, Pageable pageable){
         return postRepo.findByTagSlugsContaining(tag, pageable);
     }
@@ -78,7 +79,14 @@ public class PostService {
     @Transactional
     @CachePut(value = "posts", key = "#id")
     public Post updatePost(String id, UpdatePostRequest request){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentUser = authentication.getName();
+
         Post post = getPostById(id);
+
+        if (!Objects.equals(post.getAuthor(), currentUser)){
+            throw new BadRequestException("You cannot edit another author's post");
+        }
 
         post.setTitle(request.getTitle() + "(Edit)");
         post.setContent(request.getContent() + "This post was last edited at: " + Date.from(Instant.now()));
@@ -88,7 +96,7 @@ public class PostService {
         return postRepo.save(post);
     }
 
-
+    @CacheEvict(value = "posts", key = "#id")
     public Post addReview(String id, ReviewRequest request){
         Post post = getPostById(id);
 
@@ -102,6 +110,15 @@ public class PostService {
 
         Review review = new Review(request.getStars(), user, id);
         reviews.add(review);
+
+        int size = reviews.size();
+        double sum = 0.0;
+
+        for (Review r: reviews){
+            sum += r.getStars();
+        }
+
+        post.setAvgRating(sum / size);
 
         post.setReviews(reviews);
         return postRepo.save(post);

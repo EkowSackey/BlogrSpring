@@ -19,6 +19,7 @@ public class PostResponse {
     private List<String> tags;
     private List<Comment> comments;
     private List<Review> reviews;
+    private double avgRating;
     private Date createdAt;
     private Date lastUpdate;
 }

@@ -16,6 +16,7 @@ public class PostMapper {
                 post.getTagSlugs(),
                 post.getComments(),
                 post.getReviews(),
+                post.getAvgRating(),
                 post.getDateCreated(),
                 post.getLastUpdate()
         );

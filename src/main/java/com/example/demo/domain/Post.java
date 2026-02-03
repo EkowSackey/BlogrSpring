@@ -39,6 +39,8 @@ public class Post{
 
     private List<Review> reviews;
 
+    private double avgRating;
+
     public Post(String title, String content, List<String> tags){
         this.title = title;
         this.content = content;

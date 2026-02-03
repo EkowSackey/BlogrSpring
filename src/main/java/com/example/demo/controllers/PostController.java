@@ -81,7 +81,7 @@ public class PostController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<PostResponse> reviewPost( @Valid ReviewRequest request, @PathVariable String id){
+    public ResponseEntity<PostResponse> reviewPost(@RequestBody ReviewRequest request, @PathVariable String id){
         Post post= postService.addReview(id, request);
         return ResponseEntity.ok(PostMapper.toResponse(post));
     }

@@ -8,7 +8,6 @@ import org.springframework.data.annotation.Id;
 
 @Data
 @AllArgsConstructor
-@NoArgsConstructor
 public class Review{
 
         private double stars;
@@ -16,6 +15,5 @@ public class Review{
         private String userId;
 
         private String postId;
-
 }
 
