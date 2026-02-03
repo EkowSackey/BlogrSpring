@@ -3,6 +3,7 @@ package com.example.demo.domain;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.UniqueElements;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -35,6 +36,7 @@ public class Post{
     private List<Comment> comments;
 
     @Indexed
+    @UniqueElements(message = "Tags must be unique")
     private List<String> tagSlugs;
 
     private List<Review> reviews;
