@@ -6,7 +6,7 @@ A simple blog platform built with Spring (Spring Boot) and Java.
 
 - Create, read, update, delete (CRUD) operations for blog posts
 - Commenting system
-- User registration and authentication (e.g. JWT / session-based — adapt to your implementation)
+- User registration and authentication (JWT based)
 - RESTful API endpoints for client apps
 - Pagination and basic filtering for lists
 - Input validation and basic error handling
@@ -55,8 +55,6 @@ If using Gradle:
 ```
 
 ### Run (Maven)
-
-If the project produces an executable jar:
 
 ```
 mvn spring-boot:run
