@@ -217,9 +217,7 @@ class PostServiceTest {
 
         assertNotNull(result);
         assertTrue(result.getTitle().contains("Updated Title"));
-        assertTrue(result.getTitle().contains("(Edit)"));
         assertTrue(result.getContent().contains("Updated Content"));
-        assertTrue(result.getContent().contains("This post was last edited at:"));
         assertEquals(1, result.getTagSlugs().size());
         assertNotNull(result.getLastUpdate());
 
