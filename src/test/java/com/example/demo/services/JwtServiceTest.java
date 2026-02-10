@@ -19,7 +19,6 @@ import static org.junit.jupiter.api.Assertions.*;
 class JwtServiceTest {
 
     private JwtService jwtService;
-    private String testSecret;
     private Key signingKey;
 
     @BeforeEach
@@ -30,7 +29,7 @@ class JwtServiceTest {
         for (int i = 0; i < secretBytes.length; i++) {
             secretBytes[i] = (byte) i;
         }
-        testSecret = Base64.getEncoder().encodeToString(secretBytes);
+        String testSecret = Base64.getEncoder().encodeToString(secretBytes);
         signingKey = Keys.hmacShaKeyFor(Base64.getDecoder().decode(testSecret));
 
         ReflectionTestUtils.setField(jwtService, "secret", testSecret);
@@ -194,7 +193,7 @@ class JwtServiceTest {
     @Test
     void generateJwtToken_shouldCreateTokenWithCorrectExpiration() {
         String username = "testuser";
-        long expectedDuration = 1000 * 24 * 24;
+        long expectedDuration = 1000 * 60 * 60 * 24;
         long beforeGeneration = System.currentTimeMillis();
 
         String token = jwtService.generateJwtToken(username);
