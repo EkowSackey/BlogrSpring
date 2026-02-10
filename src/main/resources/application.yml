@@ -6,6 +6,11 @@ spring:
       enabled: true
       path: /graphiql
     path: /graphql
+  cache:
+    type: caffeine
+    cache-names: posts, users, post-pages
+    caffeine:
+      spec: maximumSize=1000,expireAfterWrite=10m
 
   security:
     oauth2:

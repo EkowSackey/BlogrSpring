@@ -39,9 +39,9 @@ public class UserController {
         return ResponseEntity.ok(userService.authenticateUser(request));
     }
 
-    @GetMapping("/")
+    @GetMapping()
     public ResponseEntity<Page<UserResponse>> getAllUsers(
-            @PageableDefault(size = 10, sort = "dateCreated", direction = Sort.Direction.DESC)
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC)
             @ParameterObject Pageable pageable
             ){
         Page<UserResponse> response = userService.getAllUsers(pageable)

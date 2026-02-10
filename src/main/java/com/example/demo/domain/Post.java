@@ -43,6 +43,7 @@ public class Post{
         this.title = title;
         this.content = content;
         this.tagSlugs = new ArrayList<>(tags);
+        this.reviews = new ArrayList<>();
     }
 }
 
