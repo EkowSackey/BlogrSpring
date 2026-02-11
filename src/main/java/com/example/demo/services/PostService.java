@@ -40,15 +40,19 @@ public class PostService {
     @CacheEvict(value = "post-pages", allEntries = true)
     public Post createPost(CreatePostRequest request){
 
-        List<String> tags = (request.getTags() == null) ? new ArrayList<>() : request.getTags();
-
-        Post post = new Post(request.getTitle(), request.getContent(), tags);
-        post.setDateCreated(Date.from(Instant.now()));
-        post.setLastUpdate(Date.from(Instant.now()));
+        List<String> tags = (request.getTags() == null) ? new ArrayList<>() : normalizeTags(request.getTags());
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String authorUsername = authentication.getName();
-        post.setAuthor(authorUsername);
+
+        Post post = Post.builder()
+                .title(request.getTitle())
+                .content(request.getContent())
+                .tagSlugs(tags)
+                .author(authorUsername)
+                .dateCreated(Date.from(Instant.now()))
+                .lastUpdate(Date.from(Instant.now()))
+                .build();
 
         postRepo.save(post);
         return post;
@@ -72,7 +76,7 @@ public class PostService {
     }
 
     public Page<Post> getPostsByTag(String tag, Pageable pageable){
-        return postRepo.findByTagSlugsContaining(tag, pageable);
+        return postRepo.findByTagSlugsContaining(tag.toLowerCase(), pageable);
     }
 
     @Transactional
@@ -82,7 +86,7 @@ public class PostService {
 
         post.setTitle(request.getTitle());
         post.setContent(request.getContent());
-        post.setTagSlugs(request.getTags());
+        post.setTagSlugs(normalizeTags(request.getTags()));
         post.setLastUpdate(Date.from(Instant.now()));
 
         return postRepo.save(post);
@@ -111,4 +115,10 @@ public class PostService {
     public void deletePost(String id){
         postRepo.deleteByPostId(id);
     }
-   }
+
+    private List<String> normalizeTags(List<String> tags) {
+        return tags.stream()
+                .map(String::toLowerCase)
+                .toList();
+    }
+}

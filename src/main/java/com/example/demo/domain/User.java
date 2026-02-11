@@ -1,6 +1,7 @@
 package com.example.demo.domain;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
@@ -17,6 +18,7 @@ import java.util.*;
 @AllArgsConstructor
 @Document(collection = "users")
 @NoArgsConstructor
+@Builder
 public class User implements UserDetails {
 
     @Id

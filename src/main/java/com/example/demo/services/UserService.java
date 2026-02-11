@@ -55,12 +55,13 @@ public class UserService {
         List<Role> roles = new ArrayList<>();
         roles.add( Role.USER);
 
-        User user = new User();
-        user.setEmail(email);
-        user.setUsername(username);
-        user.setPassword(password);
-        user.setCreatedAt(new Date());
-        user.setRoles(roles);
+        User user = User.builder()
+                .email(email)
+                .username(username)
+                .password(password)
+                .createdAt(new Date())
+                .roles(roles)
+                .build();
 
         return userRepo.save(user);
     }
