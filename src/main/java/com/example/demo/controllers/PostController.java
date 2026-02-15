@@ -3,6 +3,7 @@ package com.example.demo.controllers;
 import com.example.demo.domain.Post;
 import com.example.demo.dto.CreatePostRequest;
 import com.example.demo.dto.PostResponse;
+import com.example.demo.dto.PostSummary;
 import com.example.demo.dto.ReviewRequest;
 import com.example.demo.dto.UpdatePostRequest;
 import com.example.demo.exception.BadRequestException;
@@ -49,12 +50,18 @@ public class PostController {
     public ResponseEntity<Page<PostResponse>> getAllPosts(
             @RequestParam(required = false) String author,
             @RequestParam(required = false) String tag,
+            @RequestParam(required = false) Integer minStars,
             @PageableDefault(size = 10, sort = "dateCreated", direction = Sort.Direction.DESC)
             @ParameterObject Pageable pageable
     ) {
 
         if (author != null && tag !=null){
             throw new BadRequestException("Cannot filter by author and tag at the same time");
+        }
+
+        if (author != null && minStars != null) {
+              Page<PostResponse> response = postService.getPostsByAuthorAndMinStars(author, minStars, pageable).map(PostMapper::toResponse);
+              return ResponseEntity.ok(response);
         }
 
         if (author != null){
@@ -69,6 +76,15 @@ public class PostController {
                 .map(PostMapper::toResponse);
 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/summaries")
+    public ResponseEntity<Page<PostSummary>> getPostSummaries(
+           @PageableDefault(size = 10, sort = "dateCreated", direction = Sort.Direction.DESC)
+           @ParameterObject Pageable pageable
+    ){
+        return ResponseEntity.ok(postService.getPostSummaries(pageable));
+
     }
 
     @PutMapping("/{id}")

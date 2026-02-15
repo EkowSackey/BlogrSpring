@@ -3,6 +3,7 @@ package com.example.demo.services;
 import com.example.demo.domain.Post;
 import com.example.demo.domain.Review;
 import com.example.demo.dto.CreatePostRequest;
+import com.example.demo.dto.PostSummary;
 import com.example.demo.dto.ReviewRequest;
 import com.example.demo.dto.UpdatePostRequest;
 import com.example.demo.exception.BadRequestException;
@@ -14,6 +15,7 @@ import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.core.query.TextCriteria;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -72,7 +74,16 @@ public class PostService {
     }
 
     public Page<Post> getPostsByTag(String tag, Pageable pageable){
-        return postRepo.findByTagSlugsContaining(tag, pageable);
+        TextCriteria criteria = TextCriteria.forDefaultLanguage().matchingAny(tag);
+        return postRepo.findAllBy(criteria, pageable);
+    }
+
+    public Page<Post> getPostsByAuthorAndMinStars(String author, int minStars, Pageable pageable) {
+        return postRepo.findPostsByAuthorAndMinStars(author, minStars, pageable);
+    }
+
+    public Page<PostSummary> getPostSummaries(Pageable pageable){
+        return postRepo.findAllProjectedBy(pageable);
     }
 
     @Transactional

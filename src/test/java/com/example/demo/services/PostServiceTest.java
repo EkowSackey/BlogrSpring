@@ -18,6 +18,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.core.query.TextCriteria;
+import org.mockito.ArgumentCaptor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -187,14 +189,17 @@ class PostServiceTest {
         );
         Page<Post> postPage = new PageImpl<>(posts, pageable, posts.size());
 
-        when(postRepo.findByTagSlugsContaining(tag, pageable)).thenReturn(postPage);
+        when(postRepo.findAllBy(any(TextCriteria.class), eq(pageable))).thenReturn(postPage);
 
 
         Page<Post> result = postService.getPostsByTag(tag, pageable);
 
         assertNotNull(result);
         assertEquals(1, result.getContent().size());
-        verify(postRepo, times(1)).findByTagSlugsContaining(tag, pageable);
+        
+        ArgumentCaptor<TextCriteria> captor = ArgumentCaptor.forClass(TextCriteria.class);
+        verify(postRepo, times(1)).findAllBy(captor.capture(), eq(pageable));
+        assertNotNull(captor.getValue());
     }
 
     @Test
@@ -365,5 +370,35 @@ class PostServiceTest {
         Post result = postService.updatePost(postId, request);
 
         assertNotNull(result.getLastUpdate());
+    }
+
+    @Test
+    void getPostsByAuthorAndMinStars_shouldCallRepoMethod() {
+        String author = "john_doe";
+        int minStars = 4;
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Post> page = new PageImpl<>(List.of(new Post()));
+        when(postRepo.findPostsByAuthorAndMinStars(author, minStars, pageable)).thenReturn(page);
+
+        Page<Post> result = postService.getPostsByAuthorAndMinStars(author, minStars, pageable);
+
+        assertEquals(1, result.getTotalElements());
+        verify(postRepo).findPostsByAuthorAndMinStars(author, minStars, pageable);
+    }
+
+    @Test
+    void getPostSummaries_shouldCallRepoProjectionMethod() {
+        Pageable pageable = PageRequest.of(0, 5);
+        com.example.demo.dto.PostSummary summary = mock(com.example.demo.dto.PostSummary.class);
+        when(summary.getTitle()).thenReturn("Summary Title");
+        
+        Page<com.example.demo.dto.PostSummary> page = new PageImpl<>(java.util.Collections.singletonList(summary));
+        when(postRepo.findAllProjectedBy(pageable)).thenReturn(page);
+
+        Page<com.example.demo.dto.PostSummary> result = postService.getPostSummaries(pageable);
+
+        assertEquals(1, result.getTotalElements());
+        assertEquals("Summary Title", result.getContent().get(0).getTitle());
+        verify(postRepo).findAllProjectedBy(pageable);
     }
 }
