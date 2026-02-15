@@ -1,5 +1,7 @@
 package com.example.demo.dto;
 
+
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,6 +14,10 @@ import lombok.Setter;
 @NoArgsConstructor
 public class AuthenticateUserRequest {
 
-    @NotBlank private String username;
-    @NotBlank private String password;
+    @NotBlank
+    @Schema(description = "Username for login", example = "user123")
+    private String username;
+    @NotBlank
+    @Schema(description = "Password for login", example = "password123")
+    private String password;
 }
