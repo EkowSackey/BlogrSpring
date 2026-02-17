@@ -80,8 +80,8 @@ public class PostService {
     public Post updatePost(String id, UpdatePostRequest request){
         Post post = getPostById(id);
 
-        post.setTitle(request.getTitle() + "(Edit)");
-        post.setContent(request.getContent() + "This post was last edited at: " + Date.from(Instant.now()));
+        post.setTitle(request.getTitle());
+        post.setContent(request.getContent());
         post.setTagSlugs(request.getTags());
         post.setLastUpdate(Date.from(Instant.now()));
 

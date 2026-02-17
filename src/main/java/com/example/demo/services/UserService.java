@@ -76,7 +76,7 @@ public class UserService {
 
     public Page<User> getAllUsers(Pageable pageable){return userRepo.findAll(pageable);}
 
-    @Cacheable(value = "users", key = "#userid")
+    @Cacheable(value = "users", key = "#id")
     public User getUserById(String id){
         return userRepo.findById(id)
                 .orElseThrow(()-> new ResourceNotFoundException("User not found"));

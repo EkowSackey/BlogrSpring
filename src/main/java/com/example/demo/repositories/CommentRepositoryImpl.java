@@ -16,7 +16,7 @@ public class CommentRepositoryImpl implements CommentRepository {
     }
 
     @Override
-    public Comment insert(Comment comment) {
+    public Object insert(Comment comment) {
         return mongoTemplate.insert(comment);
     }
 
