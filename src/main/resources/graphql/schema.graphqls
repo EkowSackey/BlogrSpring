@@ -45,7 +45,7 @@ type PostResponse {
     id: ID
     title: String
     content: String
-    authorId: String
+    author: String
     tags: [String]
     createdAt: String
     lastUpdate: String
@@ -67,8 +67,8 @@ type PostPage {
 }
 
 type UserResponse{
-    id: ID
+    userId: ID
     username: String
     email: String
-    role: String
+    roles: [String]
 }

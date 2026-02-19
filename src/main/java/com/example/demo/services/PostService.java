@@ -8,10 +8,12 @@ import com.example.demo.dto.UpdatePostRequest;
 import com.example.demo.exception.BadRequestException;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repositories.PostRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
@@ -21,21 +23,18 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class PostService {
 
 
     private final PostRepository postRepo;
-
-    public PostService(PostRepository postRepo) {
-        this.postRepo = postRepo;
-    }
 
     @CacheEvict(value = "post-pages", allEntries = true)
     public Post createPost(CreatePostRequest request){
@@ -43,11 +42,10 @@ public class PostService {
         List<String> tags = (request.getTags() == null) ? new ArrayList<>() : request.getTags();
 
         Post post = new Post(request.getTitle(), request.getContent(), tags);
-        post.setDateCreated(Date.from(Instant.now()));
-        post.setLastUpdate(Date.from(Instant.now()));
+        post.setDateCreated(Instant.now());
+        post.setLastUpdate(Instant.now());
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String authorUsername = authentication.getName();
+        String authorUsername = getCurrentUsername();
         post.setAuthor(authorUsername);
 
         postRepo.save(post);
@@ -76,39 +74,54 @@ public class PostService {
     }
 
     @Transactional
-    @CachePut(value = "posts", key = "#id")
+    @Caching(evict = {
+            @CacheEvict(value = "post-pages", allEntries = true)
+    }, put = {
+            @CachePut(value = "posts", key = "#id")
+    })
     public Post updatePost(String id, UpdatePostRequest request){
         Post post = getPostById(id);
 
         post.setTitle(request.getTitle());
         post.setContent(request.getContent());
         post.setTagSlugs(request.getTags());
-        post.setLastUpdate(Date.from(Instant.now()));
+        post.setLastUpdate(Instant.now());
 
         return postRepo.save(post);
     }
 
-
+    @Transactional
     public Post addReview(String id, ReviewRequest request){
         Post post = getPostById(id);
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String user = authentication.getName();
+        String reviewerUsername = getCurrentUsername();
 
-        if (Objects.equals(post.getAuthor(), user)){
+        if (Objects.equals(post.getAuthor(), reviewerUsername)){
             throw new BadRequestException("Author cannot review their own post");
         }
         List<Review> reviews = post.getReviews();
+        if (reviews == null) {
+            reviews = new ArrayList<>();
+        }
 
-        Review review = new Review(request.getStars(), user, id);
+        Review review = new Review(request.getStars(), reviewerUsername, id);
         reviews.add(review);
 
         post.setReviews(reviews);
         return postRepo.save(post);
     }
 
-    @CacheEvict(value = "posts", key = "#id")
+    @Caching(evict = {
+            @CacheEvict(value = "posts", key = "#id"),
+            @CacheEvict(value = "post-pages", allEntries = true)
+    })
     public void deletePost(String id){
         postRepo.deleteByPostId(id);
+    }
+
+    private String getCurrentUsername() {
+        return Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
+                .map(Authentication::getName)
+                .orElseThrow(() -> new BadRequestException("User must be authenticated"));
     }
    }

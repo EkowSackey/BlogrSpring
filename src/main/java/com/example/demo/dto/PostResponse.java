@@ -7,7 +7,7 @@ import com.example.demo.domain.Review;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 
 @Getter
@@ -29,8 +29,7 @@ public class PostResponse {
     @Schema(description = "Reviews of the post")
     private List<Review> reviews;
     @Schema(description = "Creation date of the post")
-    private Date createdAt;
+    private Instant createdAt;
     @Schema(description = "Last update date of the post")
-    private Date lastUpdate;
+    private Instant lastUpdate;
 }
-

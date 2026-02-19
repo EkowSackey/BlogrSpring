@@ -16,6 +16,7 @@ import com.example.demo.exception.BadRequestException;
 import com.example.demo.mapper.PostMapper;
 import com.example.demo.services.PostService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
@@ -30,13 +31,10 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping(path = "/api/v1/posts", produces = "application/json")
 @Tag(name = "Posts", description = "API for managing posts")
+@RequiredArgsConstructor
 public class PostController {
 
     private final PostService postService;
-
-    public PostController(PostService postService) {
-        this.postService = postService;
-    }
 
     @Operation(summary = "Create a new post", description = "Creates a new post with the given details")
     @ApiResponses(value = {
@@ -115,7 +113,7 @@ public class PostController {
             @ApiResponse(responseCode = "404", description = "Post not found")
     })
     @PatchMapping("/{id}")
-    public ResponseEntity<PostResponse> reviewPost( @Valid ReviewRequest request, @Parameter(description = "ID of the post to be reviewed") @PathVariable String id){
+    public ResponseEntity<PostResponse> reviewPost( @Valid @RequestBody ReviewRequest request, @Parameter(description = "ID of the post to be reviewed") @PathVariable String id){
         Post post= postService.addReview(id, request);
         return ResponseEntity.ok(PostMapper.toResponse(post));
     }

@@ -14,6 +14,7 @@ import com.example.demo.dto.UserResponse;
 import com.example.demo.mapper.UserMapper;
 import com.example.demo.services.UserService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
@@ -28,13 +29,10 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("api/v1/users")
 @Tag(name = "Users", description = "API for managing users")
+@RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService;
-
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
 
     @Operation(summary = "Register a new user", description = "Registers a new user and returns the user details")
     @ApiResponses(value = {
@@ -59,7 +57,7 @@ public class UserController {
     }
 
     @Operation(summary = "Get all users", description = "Retrieves a paginated list of users")
-    @GetMapping("/")
+    @GetMapping
     public ResponseEntity<Page<UserResponse>> getAllUsers(
             @PageableDefault(size = 10, sort = "dateCreated", direction = Sort.Direction.DESC)
             @ParameterObject Pageable pageable
