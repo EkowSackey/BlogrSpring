@@ -47,7 +47,15 @@ public class PostService {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String authorUsername = authentication.getName();
-        post.setAuthor(authorUsername);
+
+        Post post = Post.builder()
+                .title(request.getTitle())
+                .content(request.getContent())
+                .tagSlugs(tags)
+                .author(authorUsername)
+                .dateCreated(Date.from(Instant.now()))
+                .lastUpdate(Date.from(Instant.now()))
+                .build();
 
         postRepo.save(post);
         return post;
@@ -119,4 +127,10 @@ public class PostService {
     public void deletePost(String id){
         postRepo.deleteByPostId(id);
     }
-   }
+
+    private List<String> normalizeTags(List<String> tags) {
+        return tags.stream()
+                .map(String::toLowerCase)
+                .toList();
+    }
+}
