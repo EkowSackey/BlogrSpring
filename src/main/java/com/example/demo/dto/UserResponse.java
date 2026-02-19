@@ -4,7 +4,7 @@ import com.example.demo.domain.Role;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 
 @Getter
@@ -14,5 +14,5 @@ public class UserResponse {
     private String username;
     private String email;
     private List<Role> roles;
-    private Date createdAt;
+    private Instant createdAt;
 }

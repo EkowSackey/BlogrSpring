@@ -9,6 +9,7 @@ import com.example.demo.dto.UpdatePostRequest;
 import com.example.demo.exception.BadRequestException;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repositories.PostRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
@@ -23,21 +24,17 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class PostService {
 
 
     private final PostRepository postRepo;
-
-    public PostService(PostRepository postRepo) {
-        this.postRepo = postRepo;
-    }
 
     @CacheEvict(value = "post-pages", allEntries = true)
     public Post createPost(CreatePostRequest request){
@@ -45,8 +42,8 @@ public class PostService {
         List<String> tags = (request.getTags() == null) ? new ArrayList<>() : request.getTags();
 
         Post post = new Post(request.getTitle(), request.getContent(), tags);
-        post.setDateCreated(Date.from(Instant.now()));
-        post.setLastUpdate(Date.from(Instant.now()));
+        post.setDateCreated(Instant.now());
+        post.setLastUpdate(Instant.now());
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String authorUsername = authentication.getName();
@@ -94,12 +91,12 @@ public class PostService {
         post.setTitle(request.getTitle());
         post.setContent(request.getContent());
         post.setTagSlugs(request.getTags());
-        post.setLastUpdate(Date.from(Instant.now()));
+        post.setLastUpdate(Instant.now());
 
         return postRepo.save(post);
     }
 
-
+    @Transactional
     public Post addReview(String id, ReviewRequest request){
         Post post = getPostById(id);
 

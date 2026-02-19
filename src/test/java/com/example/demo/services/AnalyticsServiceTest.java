@@ -1,11 +1,12 @@
 package com.example.demo.services;
 
+import com.example.demo.repositories.PostRepository;
+import com.example.demo.repositories.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
@@ -23,6 +24,12 @@ class AnalyticsServiceTest {
 
     @Mock
     private MongoTemplate mongoTemplate;
+
+    @Mock
+    private PostRepository postRepository;
+
+    @Mock
+    private UserRepository userRepository;
 
     @InjectMocks
     private AnalyticsService analyticsService;
@@ -50,5 +57,95 @@ class AnalyticsServiceTest {
         assertEquals(10L, result.get(0).getPostCount());
 
         verify(mongoTemplate).aggregate(any(Aggregation.class), eq("posts"), eq(AnalyticsService.AuthorStats.class));
+    }
+
+    @Test
+    void getTotalPosts_shouldReturnCount() {
+        // Arrange
+        when(postRepository.count()).thenReturn(100L);
+
+        // Act
+        long result = analyticsService.getTotalPosts();
+
+        // Assert
+        assertEquals(100L, result);
+        verify(postRepository).count();
+    }
+
+    @Test
+    void getTotalUsers_shouldReturnCount() {
+        // Arrange
+        when(userRepository.count()).thenReturn(50L);
+
+        // Act
+        long result = analyticsService.getTotalUsers();
+
+        // Assert
+        assertEquals(50L, result);
+        verify(userRepository).count();
+    }
+
+    @Test
+    void getTopTags_shouldReturnTagStats() {
+        // Arrange
+        int limit = 5;
+        AnalyticsService.TagStats stats = new AnalyticsService.TagStats("tag1", 20L);
+        AggregationResults<AnalyticsService.TagStats> results = new AggregationResults<>(
+                Collections.singletonList(stats),
+                new org.bson.Document()
+        );
+
+        when(mongoTemplate.aggregate(any(Aggregation.class), eq("posts"), eq(AnalyticsService.TagStats.class)))
+                .thenReturn(results);
+
+        // Act
+        List<AnalyticsService.TagStats> result = analyticsService.getTopTags(limit);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("tag1", result.get(0).getTagName());
+        assertEquals(20L, result.get(0).getTagCount());
+
+        verify(mongoTemplate).aggregate(any(Aggregation.class), eq("posts"), eq(AnalyticsService.TagStats.class));
+    }
+
+    @Test
+    void getAverageReviewsPerPost_shouldReturnAverage() {
+        // Arrange
+        org.bson.Document doc = new org.bson.Document("averageReviews", 3.5);
+        AggregationResults<org.bson.Document> results = new AggregationResults<>(
+                Collections.singletonList(doc),
+                new org.bson.Document()
+        );
+
+        when(mongoTemplate.aggregate(any(Aggregation.class), eq("posts"), eq(org.bson.Document.class)))
+                .thenReturn(results);
+
+        // Act
+        double result = analyticsService.getAverageReviewsPerPost();
+
+        // Assert
+        assertEquals(3.5, result);
+        verify(mongoTemplate).aggregate(any(Aggregation.class), eq("posts"), eq(org.bson.Document.class));
+    }
+
+    @Test
+    void getAverageReviewsPerPost_shouldReturnZeroIfNoResults() {
+        // Arrange
+        AggregationResults<org.bson.Document> results = new AggregationResults<>(
+                Collections.emptyList(),
+                new org.bson.Document()
+        );
+
+        when(mongoTemplate.aggregate(any(Aggregation.class), eq("posts"), eq(org.bson.Document.class)))
+                .thenReturn(results);
+
+        // Act
+        double result = analyticsService.getAverageReviewsPerPost();
+
+        // Assert
+        assertEquals(0.0, result);
+        verify(mongoTemplate).aggregate(any(Aggregation.class), eq("posts"), eq(org.bson.Document.class));
     }
 }

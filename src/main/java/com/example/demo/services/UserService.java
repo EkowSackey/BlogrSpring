@@ -8,6 +8,7 @@ import com.example.demo.exception.DuplicateEmailException;
 import com.example.demo.exception.DuplicateUsernameException;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repositories.UserRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -19,13 +20,13 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Service
 @Slf4j
-
+@RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepo;
@@ -33,15 +34,6 @@ public class UserService {
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
     private final UserDetailsService userDetailsService;
-
-    public UserService(UserRepository userRepo, JwtService jwtService, AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder, UserDetailsService userDetailsService) {
-        this.userRepo = userRepo;
-        this.jwtService = jwtService;
-        this.authenticationManager = authenticationManager;
-        this.passwordEncoder = passwordEncoder;
-        this.userDetailsService = userDetailsService;
-    }
-
 
     @CacheEvict(value = "users", allEntries = true)
     public User registerUser(RegisterUserRequest request){
@@ -59,7 +51,7 @@ public class UserService {
         user.setEmail(email);
         user.setUsername(username);
         user.setPassword(password);
-        user.setCreatedAt(new Date());
+        user.setCreatedAt(Instant.now());
         user.setRoles(roles);
 
         return userRepo.save(user);
@@ -76,7 +68,7 @@ public class UserService {
 
     public Page<User> getAllUsers(Pageable pageable){return userRepo.findAll(pageable);}
 
-    @Cacheable(value = "users", key = "#userid")
+    @Cacheable(value = "users", key = "#id")
     public User getUserById(String id){
         return userRepo.findById(id)
                 .orElseThrow(()-> new ResourceNotFoundException("User not found"));

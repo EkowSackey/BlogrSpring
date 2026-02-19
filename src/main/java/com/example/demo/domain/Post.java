@@ -10,8 +10,8 @@ import org.springframework.data.mongodb.core.index.TextIndexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Document(collection = "posts")
@@ -30,9 +30,9 @@ public class Post{
     @TextIndexed
     private String content;
 
-    private Date dateCreated;
+    private Instant dateCreated;
 
-    private Date lastUpdate;
+    private Instant lastUpdate;
 
     @Indexed
     private String author;
@@ -52,17 +52,3 @@ public class Post{
         this.reviews = new ArrayList<>();
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
