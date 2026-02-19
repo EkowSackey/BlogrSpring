@@ -1,126 +1,89 @@
-# BlogrSpring
+# Blogr
 
-A simple blog platform built with Spring (Spring Boot) and Java.
+A modern, high-performance blog platform backend built with **Spring Boot 3**, **Java 17**, and **MongoDB**.
 
-## Features
+## 🚀 Features
 
-- Create, read, update, delete (CRUD) operations for blog posts
-- Commenting system
-- User registration and authentication (JWT based)
-- RESTful API endpoints for client apps
-- Pagination and basic filtering for lists
-- Input validation and basic error handling
-- API documentation via Swagger/OpenAPI
+- **Dual API Support**: Fully functional **RESTful API** and **GraphQL API**.
+- **Content Management**: Complete CRUD operations for Posts, Comments, and User profiles.
+- **Advanced Analytics**: Real-time statistics including top authors, trending tags, and engagement metrics (average reviews).
+- **Security**: Robust authentication and authorization using **JWT (JSON Web Tokens)** with Role-Based Access Control (RBAC).
+- **Performance**: 
+  - **Caffeine Caching**: Optimized data retrieval for frequently accessed posts and pages.
+  - **AOP Monitoring**: Aspect-Oriented Programming used for performance tracking and logging.
+- **Documentation**: 
+  - Interactive **Swagger UI** for REST endpoints.
+  - **GraphiQL** interface for exploring the GraphQL schema.
+- **Data Integrity**: Atomic operations ensured via Spring's `@Transactional` support for MongoDB.
 
-## Tech stack
+## 🛠 Tech Stack
 
-- Java (100%)
-- Spring Boot (Web, Data JPA, Security)
-- JPA / Hibernate
-- Mongodb database
-- Build: Maven 
+- **Language**: Java 17
+- **Framework**: Spring Boot 3.5.9
+- **Database**: MongoDB (Spring Data MongoDB)
+- **Security**: Spring Security + JJWT
+- **API**: Spring Web (REST), Spring for GraphQL
+- **Caching**: Caffeine Cache
+- **Documentation**: Springdoc OpenAPI (Swagger)
+- **Utilities**: Lombok, MapStruct (Mappers)
+- **Build Tool**: Maven
 
-## Prerequisites
+## 📋 Prerequisites
 
-- JDK 17+ (or as required by your project) installed
-- Maven 3.6+ or Gradle 6+ if building locally
-- A running DB instance
+- **JDK 17** or higher
+- **Maven 3.8+**
+- **MongoDB** (Local instance or Atlas URI)
 
-## Getting started
+## ⚙️ Configuration
 
-1. Clone the repository:
-   ```
+Settings are located in `src/main/resources/application.yml`. Key properties:
+
+- **MongoDB**: `spring.data.mongodb.uri`
+- **JWT Secret**: `jwt.secret`
+- **Server Port**: `server.port` (Default: 8080)
+
+### Environment Variables
+For production, it is recommended to use environment variables:
+- `SPRING_DATA_MONGODB_URI`
+- `JWT_SECRET`
+
+## 🚀 Getting Started
+
+1. **Clone the repository**:
+   ```bash
    git clone https://github.com/EkowSackey/BlogrSpring.git
    cd BlogrSpring
    ```
 
-2. Check whether the project uses Maven or Gradle:
-    - Maven: `pom.xml` present
-    - Gradle: `build.gradle` or `build.gradle.kts` present
+2. **Build the project**:
+   ```bash
+   mvn clean package
+   ```
 
-### Build tools
+3. **Run the application**:
+   ```bash
+   mvn spring-boot:run
+   ```
 
-If using Maven:
+## 📖 API Documentation
 
-```
-mvn -v
-mvn clean package
-```
+Once the app is running, you can access the documentation at:
 
-If using Gradle:
+- **Swagger UI (REST)**: `http://localhost:8080/swagger-ui.html`
+- **GraphiQL (GraphQL)**: `http://localhost:8080/graphiql`
 
-```
-./gradlew -v
-./gradlew build
-```
+## 🧪 Testing
 
-### Run (Maven)
+The project includes comprehensive unit and integration tests for Services and Controllers.
 
-```
-mvn spring-boot:run
-# or
-java -jar target/<artifact>-<version>.jar
-```
-
-### Run (Gradle)
-
-```
-./gradlew bootRun
-# or
-java -jar build/libs/<artifact>-<version>.jar
-```
-
-The app will typically start on port 8080. Visit http://localhost:8080/ (or the configured port).
-
-
-
-Adjust environment variables to match your configuration.
-
-## Configuration
-
-Application settings live in `src/main/resources/application.yml` Common properties to configure:
-
-- Server port: `server.port`
-- Datasource: `spring.datasource.url`, `spring.datasource.username`, `spring.datasource.password`
-- JPA / Hibernate: `spring.jpa.*`
-- JWT / security secrets: `app.security.jwtSecret` (or similar)
-- Logging level: `logging.level.*`
-
-Use environment variables or Spring profiles for sensitive values (secrets, DB credentials). Example environment variables:
-
-- SPRING_DATASOURCE_URL
-- SPRING_DATASOURCE_USERNAME
-- SPRING_DATASOURCE_PASSWORD
-- JWT_SECRET
-- SPRING_PROFILES_ACTIVE
-
-
-## Testing
-
-Run unit and integration tests:
-
-Maven:
-
-```
+```bash
 mvn test
 ```
 
-Gradle:
+## 🤝 Contributing
 
-```
-./gradlew test
-```
-
-
-## Contributing
-
-Contributions are welcome! Suggested workflow:
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feat/my-feature`
-3. Implement changes, add tests
-4. Run tests locally
-5. Create a pull request describing the change
-
-Please follow the existing code style and add tests for new behavior.
-
+1. Fork the repository.
+2. Create a feature branch: `git checkout -b feat/new-feature`.
+3. Commit your changes: `git commit -m 'Add some feature'`.
+4. Push to the branch: `git push origin feat/new-feature`.
+5. Open a Pull Request.

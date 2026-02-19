@@ -18,15 +18,13 @@ public class PerformanceAspect {
     @Around("serviceMethods()")
     public Object monitorPerformance(ProceedingJoinPoint joinPoint) throws Throwable{
         long startTime = System.currentTimeMillis();
-        System.out.println("TRIGGERED!!!");
-        log.info("Starting execution: {}", joinPoint.getSignature().getName());
+        log.debug("Starting execution: {}", joinPoint.getSignature().getName());
 
         try {
-            Object result = joinPoint.proceed();
-            return result;
-        }finally {
+            return joinPoint.proceed();
+        } finally {
             long timeTaken = System.currentTimeMillis() - startTime;
-            log.info("Finished {}. Performance: {} ms", joinPoint.getSignature().getName(), timeTaken);
+            log.info("Finished execution of {} - took {} ms", joinPoint.getSignature().getName(), timeTaken);
         }
     }
 }

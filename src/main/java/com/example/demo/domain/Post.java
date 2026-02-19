@@ -5,15 +5,19 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.index.TextIndexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Document(collection = "posts")
+@CompoundIndex(name = "author_date_idx", def = "{'author' : 1, 'dateCreated': -1}")
+@CompoundIndex(name = "author_stars_idx", def = "{'author' : 1, 'reviews.stars': 1}")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -22,13 +26,15 @@ public class Post{
     @Id
     private String postId;
 
+    @TextIndexed
     private String title;
 
+    @TextIndexed
     private String content;
 
-    private Date dateCreated;
+    private Instant dateCreated;
 
-    private Date lastUpdate;
+    private Instant lastUpdate;
 
     @Indexed
     private String author;
@@ -36,7 +42,7 @@ public class Post{
     @DocumentReference
     private List<Comment> comments;
 
-    @Indexed
+    @TextIndexed
     private List<String> tagSlugs;
 
     private List<Review> reviews;
@@ -48,17 +54,3 @@ public class Post{
         this.reviews = new ArrayList<>();
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -3,17 +3,20 @@ package com.example.demo.services;
 import com.example.demo.domain.Post;
 import com.example.demo.domain.Review;
 import com.example.demo.dto.CreatePostRequest;
+import com.example.demo.dto.PostSummary;
 import com.example.demo.dto.ReviewRequest;
 import com.example.demo.dto.UpdatePostRequest;
 import com.example.demo.exception.BadRequestException;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repositories.PostRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.core.query.TextCriteria;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -21,26 +24,26 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class PostService {
 
 
     private final PostRepository postRepo;
 
-    public PostService(PostRepository postRepo) {
-        this.postRepo = postRepo;
-    }
-
     @CacheEvict(value = "post-pages", allEntries = true)
     public Post createPost(CreatePostRequest request){
 
-        List<String> tags = (request.getTags() == null) ? new ArrayList<>() : normalizeTags(request.getTags());
+        List<String> tags = (request.getTags() == null) ? new ArrayList<>() : request.getTags();
+
+        Post post = new Post(request.getTitle(), request.getContent(), tags);
+        post.setDateCreated(Instant.now());
+        post.setLastUpdate(Instant.now());
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String authorUsername = authentication.getName();
@@ -76,7 +79,16 @@ public class PostService {
     }
 
     public Page<Post> getPostsByTag(String tag, Pageable pageable){
-        return postRepo.findByTagSlugsContaining(tag.toLowerCase(), pageable);
+        TextCriteria criteria = TextCriteria.forDefaultLanguage().matchingAny(tag);
+        return postRepo.findAllBy(criteria, pageable);
+    }
+
+    public Page<Post> getPostsByAuthorAndMinStars(String author, int minStars, Pageable pageable) {
+        return postRepo.findPostsByAuthorAndMinStars(author, minStars, pageable);
+    }
+
+    public Page<PostSummary> getPostSummaries(Pageable pageable){
+        return postRepo.findAllProjectedBy(pageable);
     }
 
     @Transactional
@@ -86,13 +98,13 @@ public class PostService {
 
         post.setTitle(request.getTitle());
         post.setContent(request.getContent());
-        post.setTagSlugs(normalizeTags(request.getTags()));
-        post.setLastUpdate(Date.from(Instant.now()));
+        post.setTagSlugs(request.getTags());
+        post.setLastUpdate(Instant.now());
 
         return postRepo.save(post);
     }
 
-
+    @Transactional
     public Post addReview(String id, ReviewRequest request){
         Post post = getPostById(id);
 
