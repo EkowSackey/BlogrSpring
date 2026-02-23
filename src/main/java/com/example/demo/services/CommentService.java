@@ -20,11 +20,11 @@ public class CommentService {
 
     private final CommentRepository commentRepo;
 
-    @Autowired
-    private MongoTemplate mongoTemplate;
+    private final MongoTemplate mongoTemplate;
 
-    public CommentService(CommentRepository commentRepo) {
+    public CommentService(CommentRepository commentRepo, MongoTemplate mongoTemplate) {
         this.commentRepo = commentRepo;
+        this.mongoTemplate = mongoTemplate;
     }
 
     @Transactional

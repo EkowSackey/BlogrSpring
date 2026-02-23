@@ -9,8 +9,8 @@ import com.example.demo.dto.PostResponse;
 import com.example.demo.dto.UserResponse;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -28,7 +28,7 @@ class MapperTest {
         post.setTagSlugs(List.of("java", "spring"));
         post.setComments(new ArrayList<>());
         post.setReviews(new ArrayList<>());
-        Date now = new Date();
+        Instant now = Instant.now();
         post.setDateCreated(now);
         post.setLastUpdate(now);
 
@@ -140,7 +140,7 @@ class MapperTest {
         user.setUsername("testuser");
         user.setEmail("test@example.com");
         user.setRoles(List.of(Role.USER));
-        Date now = new Date();
+        Instant now = Instant.now();
         user.setCreatedAt(now);
 
         // Act

@@ -41,10 +41,6 @@ public class PostService {
 
         List<String> tags = (request.getTags() == null) ? new ArrayList<>() : request.getTags();
 
-        Post post = new Post(request.getTitle(), request.getContent(), tags);
-        post.setDateCreated(Instant.now());
-        post.setLastUpdate(Instant.now());
-
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String authorUsername = authentication.getName();
 
@@ -53,8 +49,9 @@ public class PostService {
                 .content(request.getContent())
                 .tagSlugs(tags)
                 .author(authorUsername)
-                .dateCreated(Date.from(Instant.now()))
-                .lastUpdate(Date.from(Instant.now()))
+                .dateCreated(Instant.now())
+                .lastUpdate(Instant.now())
+                .reviews(new ArrayList<>())
                 .build();
 
         postRepo.save(post);
@@ -114,6 +111,11 @@ public class PostService {
         if (Objects.equals(post.getAuthor(), user)){
             throw new BadRequestException("Author cannot review their own post");
         }
+        
+        if (post.getReviews() == null) {
+            post.setReviews(new ArrayList<>());
+        }
+
         List<Review> reviews = post.getReviews();
 
         Review review = new Review(request.getStars(), user, id);
@@ -128,9 +130,4 @@ public class PostService {
         postRepo.deleteByPostId(id);
     }
 
-    private List<String> normalizeTags(List<String> tags) {
-        return tags.stream()
-                .map(String::toLowerCase)
-                .toList();
-    }
 }
