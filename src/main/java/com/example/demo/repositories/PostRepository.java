@@ -17,7 +17,6 @@ public interface PostRepository extends MongoRepository<Post, String> {
     Optional<Post> findPostByPostId(String postId);
     void deleteByPostId(String postId);
     Page<Post> findByAuthor(String authorUsername, Pageable pageable);
-    Page<Post> findByTagSlugsContaining(String tag, Pageable pageable);
     
     @Query("{ 'author' : ?0, 'reviews.stars' : { $gte : ?1 } }")
     Page<Post> findPostsByAuthorAndMinStars(String author, int minStars, Pageable pageable);
