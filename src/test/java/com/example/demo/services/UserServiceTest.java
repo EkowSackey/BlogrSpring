@@ -193,11 +193,12 @@ class UserServiceTest {
         User user = new User();
         user.setUsername("testuser");
         user.setPassword("encodedPassword");
+        user.setRoles(List.of(Role.USER));
 
         when(userDetailsService.loadUserByUsername("testuser")).thenReturn(user);
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenReturn(null);
-        when(jwtService.generateJwtToken("testuser")).thenReturn("jwt-token-123");
+        when(jwtService.generateJwtToken(anyMap(), eq(user))).thenReturn("jwt-token-123");
 
         String token = userService.authenticateUser(request);
 
@@ -207,7 +208,7 @@ class UserServiceTest {
 
         verify(userDetailsService, times(1)).loadUserByUsername("testuser");
         verify(authenticationManager, times(1)).authenticate(any(UsernamePasswordAuthenticationToken.class));
-        verify(jwtService, times(1)).generateJwtToken("testuser");
+        verify(jwtService, times(1)).generateJwtToken(anyMap(), eq(user));
     }
 
     @Test
@@ -218,11 +219,12 @@ class UserServiceTest {
 
         User user = new User();
         user.setUsername("testuser");
+        user.setRoles(List.of(Role.USER));
 
         when(userDetailsService.loadUserByUsername("testuser")).thenReturn(user);
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenReturn(null);
-        when(jwtService.generateJwtToken(anyString())).thenReturn("token");
+        when(jwtService.generateJwtToken(anyMap(), eq(user))).thenReturn("token");
 
         userService.authenticateUser(request);
 
@@ -343,10 +345,11 @@ class UserServiceTest {
 
         User user = new User();
         user.setUsername("testuser");
+        user.setRoles(List.of(Role.USER));
 
         when(userDetailsService.loadUserByUsername("testuser")).thenReturn(user);
         when(authenticationManager.authenticate(any())).thenReturn(null);
-        when(jwtService.generateJwtToken(anyString())).thenReturn("token");
+        when(jwtService.generateJwtToken(anyMap(), eq(user))).thenReturn("token");
 
         userService.authenticateUser(request);
 
@@ -354,6 +357,6 @@ class UserServiceTest {
         var inOrder = inOrder(userDetailsService, authenticationManager, jwtService);
         inOrder.verify(userDetailsService).loadUserByUsername("testuser");
         inOrder.verify(authenticationManager).authenticate(any());
-        inOrder.verify(jwtService).generateJwtToken("testuser");
+        inOrder.verify(jwtService).generateJwtToken(anyMap(), eq(user));
     }
 }

@@ -4,6 +4,7 @@ import com.example.demo.filter.JwtAuthFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -51,7 +52,22 @@ public class SecurityConfig {
                     httpRequest.requestMatchers(PUBLIC_SWAGGER_PATHS).permitAll();
                     httpRequest.requestMatchers(PUBLIC_GRAPHQL_PATHS).permitAll();
                     httpRequest.requestMatchers(PUBLIC_AUTH_PATHS).permitAll();
+                    
+                    // User Management
                     httpRequest.requestMatchers("/api/v1/users/**").hasAnyAuthority("ADMIN");
+                    
+                    // Analytics
+                    httpRequest.requestMatchers("/api/v1/analytics/**").hasAnyAuthority("ADMIN", "AUTHOR");
+
+                    // Post Management
+                    httpRequest.requestMatchers(HttpMethod.POST, "/api/v1/posts/**").hasAnyAuthority("ADMIN", "AUTHOR");
+                    httpRequest.requestMatchers(HttpMethod.PUT, "/api/v1/posts/**").hasAnyAuthority("ADMIN", "AUTHOR");
+                    httpRequest.requestMatchers(HttpMethod.DELETE, "/api/v1/posts/**").hasAnyAuthority("ADMIN", "AUTHOR");
+                    httpRequest.requestMatchers(HttpMethod.GET, "/api/v1/posts/**").hasAnyAuthority("ADMIN", "AUTHOR", "READER");
+
+                    // Comments
+                    httpRequest.requestMatchers("/api/v1/comments/**").hasAnyAuthority("ADMIN", "AUTHOR", "READER");
+
                     httpRequest.anyRequest().authenticated();
                 })
                 .sessionManagement(session ->

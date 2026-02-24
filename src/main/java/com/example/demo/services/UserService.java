@@ -22,7 +22,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Slf4j
@@ -63,7 +65,11 @@ public class UserService {
                 request.getUsername(),
                 request.getPassword()
         ));
-        return jwtService.generateJwtToken(request.getUsername());
+        
+        Map<String, Object> extraClaims = new HashMap<>();
+        extraClaims.put("roles", user.getAuthorities());
+        
+        return jwtService.generateJwtToken(extraClaims, user);
     }
 
     public Page<User> getAllUsers(Pageable pageable){return userRepo.findAll(pageable);}

@@ -58,7 +58,7 @@ class AnalyticsControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(authorities = "ADMIN")
     void getTopAuthors_shouldReturnList() throws Exception {
         List<AnalyticsService.AuthorStats> stats = List.of(
                 new AnalyticsService.AuthorStats("author1", 10L)
@@ -72,7 +72,7 @@ class AnalyticsControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(authorities = "ADMIN")
     void getTotalPosts_shouldReturnCount() throws Exception {
         when(analyticsService.getTotalPosts()).thenReturn(100L);
 
@@ -82,7 +82,7 @@ class AnalyticsControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(authorities = "ADMIN")
     void getTotalUsers_shouldReturnCount() throws Exception {
         when(analyticsService.getTotalUsers()).thenReturn(50L);
 
@@ -92,7 +92,7 @@ class AnalyticsControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(authorities = "ADMIN")
     void getTopTags_shouldReturnList() throws Exception {
         List<AnalyticsService.TagStats> stats = List.of(
                 new AnalyticsService.TagStats("tag1", 20L)
@@ -106,7 +106,7 @@ class AnalyticsControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(authorities = "ADMIN")
     void getAverageReviews_shouldReturnDouble() throws Exception {
         when(analyticsService.getAverageReviewsPerPost()).thenReturn(3.5);
 

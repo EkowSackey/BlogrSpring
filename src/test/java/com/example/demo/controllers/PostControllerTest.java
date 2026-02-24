@@ -79,7 +79,7 @@ class PostControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(authorities = "AUTHOR")
     void createPost_shouldReturnCreated() throws Exception {
         CreatePostRequest request = new CreatePostRequest();
         request.setTitle("Test Title");
@@ -98,7 +98,7 @@ class PostControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(authorities = "READER")
     void getPost_shouldReturnPost() throws Exception {
         when(postService.getPostById("123")).thenReturn(samplePost);
 
@@ -109,7 +109,7 @@ class PostControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(authorities = "READER")
     void getAllPosts_shouldReturnPage() throws Exception {
         Page<Post> page = new PageImpl<>(Collections.singletonList(samplePost));
         when(postService.getAllPosts(any(Pageable.class))).thenReturn(page);
@@ -120,7 +120,7 @@ class PostControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(authorities = "READER")
     void getAllPosts_withAuthorAndTag_shouldReturnBadRequest() throws Exception {
         mockMvc.perform(get("/api/v1/posts")
                         .param("author", "user1")
@@ -129,7 +129,7 @@ class PostControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(authorities = "AUTHOR")
     void updatePost_shouldReturnUpdatedPost() throws Exception {
         UpdatePostRequest request = new UpdatePostRequest();
         request.setTitle("Updated Title");
@@ -151,7 +151,7 @@ class PostControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(authorities = "READER")
     void reviewPost_shouldReturnPost() throws Exception {
         ReviewRequest request = new ReviewRequest();
         request.setStars(5);
@@ -166,7 +166,7 @@ class PostControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(authorities = "AUTHOR")
     void deletePost_shouldReturnNoContent() throws Exception {
         mockMvc.perform(delete("/api/v1/posts/123")
                         .with(csrf()))

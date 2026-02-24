@@ -47,6 +47,32 @@ For production, it is recommended to use environment variables:
 - `SPRING_DATA_MONGODB_URI`
 - `JWT_SECRET`
 
+## 🔒 Security Architecture
+
+### Authentication & Authorization
+The application uses **Stateless JWT Authentication**.
+- **Login**: Users authenticate via `/api/v1/users/auth/login` and receive a signed JWT.
+- **Access**: The JWT must be included in the `Authorization` header as `Bearer <token>` for all protected requests.
+- **Roles**: Access control is enforced based on user roles (`ADMIN`, `AUTHOR`, `READER`) embedded in the JWT claims.
+
+### CSRF (Cross-Site Request Forgery)
+**Status: Disabled**
+- **Reason**: The application is stateless and uses JWTs stored in client-side storage (e.g., localStorage) rather than cookies. CSRF attacks rely on the browser automatically sending session cookies with requests. Since we do not use session cookies, the API is immune to standard CSRF attacks.
+- **Enabling for Stateful Sessions**: If the application were to switch to server-side sessions or cookie-based authentication, CSRF protection should be enabled in `SecurityConfig.java`:
+  ```java
+  http.csrf(csrf -> csrf
+      .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+  );
+  ```
+
+### CORS (Cross-Origin Resource Sharing)
+**Status: Enabled**
+- **Configuration**: The API is configured to allow requests from trusted frontend origins (e.g., `http://localhost:3000`, `http://localhost:4200`).
+- **Difference from CSRF**:
+  - **CORS**: A browser security feature that prevents a malicious site from reading data from your API. It controls *access* to resources.
+  - **CSRF**: An attack that tricks a user into performing an unwanted *action* on a trusted site where they are authenticated. It exploits the trust the site has in the user's browser.
+- **Interaction**: Our strict CORS policy complements the stateless architecture by ensuring only authorized domains can interact with the API, while the lack of cookie-based auth negates the need for CSRF tokens.
+
 ## 🚀 Getting Started
 
 1. **Clone the repository**:
