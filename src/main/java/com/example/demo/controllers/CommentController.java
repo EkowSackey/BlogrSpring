@@ -13,6 +13,7 @@ import com.example.demo.services.CommentService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -32,6 +33,7 @@ public class CommentController {
                     content = @Content(schema = @Schema(implementation = Comment.class))),
             @ApiResponse(responseCode = "400", description = "Invalid input")
     })
+    @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR', 'READER')")
     @PostMapping("/")
     public ResponseEntity<Comment> createComment(@Valid @RequestBody CreateCommentRequest request){
         return new ResponseEntity<Comment>(commentService.createComment(
@@ -45,6 +47,7 @@ public class CommentController {
             @ApiResponse(responseCode = "200", description = "Comment deleted successfully"),
             @ApiResponse(responseCode = "404", description = "Comment not found")
     })
+    @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR')")
     @DeleteMapping("/{id}")
     public void deleteComment(@Parameter(description = "ID of the comment to be deleted") @PathVariable String id){
         commentService.deleteComment(id);
