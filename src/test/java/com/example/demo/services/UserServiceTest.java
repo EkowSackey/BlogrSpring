@@ -66,7 +66,7 @@ class UserServiceTest {
         savedUser.setUsername("testuser");
         savedUser.setEmail("test@example.com");
         savedUser.setPassword("encodedPassword");
-        savedUser.setRoles(List.of(Role.USER));
+        savedUser.setRoles(List.of(Role.READER));
 
         when(userRepo.save(any(User.class))).thenReturn(savedUser);
 
@@ -78,7 +78,7 @@ class UserServiceTest {
         assertEquals("test@example.com", result.getEmail());
         assertEquals("encodedPassword", result.getPassword());
         assertEquals(1, result.getRoles().size());
-        assertTrue(result.getRoles().contains(Role.USER));
+        assertTrue(result.getRoles().contains(Role.READER));
 
         verify(userRepo, times(1)).existsByUsername("testuser");
         verify(userRepo, times(1)).existsByEmail("test@example.com");
@@ -163,7 +163,7 @@ class UserServiceTest {
 
         assertNotNull(result.getRoles());
         assertEquals(1, result.getRoles().size());
-        assertEquals(Role.USER, result.getRoles().get(0));
+        assertEquals(Role.READER, result.getRoles().get(0));
     }
 
     @Test
@@ -193,11 +193,12 @@ class UserServiceTest {
         User user = new User();
         user.setUsername("testuser");
         user.setPassword("encodedPassword");
+        user.setRoles(List.of(Role.READER));
 
         when(userDetailsService.loadUserByUsername("testuser")).thenReturn(user);
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenReturn(null);
-        when(jwtService.generateJwtToken("testuser")).thenReturn("jwt-token-123");
+        when(jwtService.generateJwtToken(anyMap(), eq(user))).thenReturn("jwt-token-123");
 
         String token = userService.authenticateUser(request);
 
@@ -207,7 +208,7 @@ class UserServiceTest {
 
         verify(userDetailsService, times(1)).loadUserByUsername("testuser");
         verify(authenticationManager, times(1)).authenticate(any(UsernamePasswordAuthenticationToken.class));
-        verify(jwtService, times(1)).generateJwtToken("testuser");
+        verify(jwtService, times(1)).generateJwtToken(anyMap(), eq(user));
     }
 
     @Test
@@ -218,11 +219,12 @@ class UserServiceTest {
 
         User user = new User();
         user.setUsername("testuser");
+        user.setRoles(List.of(Role.READER));
 
         when(userDetailsService.loadUserByUsername("testuser")).thenReturn(user);
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenReturn(null);
-        when(jwtService.generateJwtToken(anyString())).thenReturn("token");
+        when(jwtService.generateJwtToken(anyMap(), eq(user))).thenReturn("token");
 
         userService.authenticateUser(request);
 
@@ -331,7 +333,7 @@ class UserServiceTest {
                         user.getPassword().equals("encodedPassword") &&
                         user.getCreatedAt() != null &&
                         user.getRoles().size() == 1 &&
-                        user.getRoles().contains(Role.USER)
+                        user.getRoles().contains(Role.READER)
         ));
     }
 
@@ -343,10 +345,11 @@ class UserServiceTest {
 
         User user = new User();
         user.setUsername("testuser");
+        user.setRoles(List.of(Role.READER));
 
         when(userDetailsService.loadUserByUsername("testuser")).thenReturn(user);
         when(authenticationManager.authenticate(any())).thenReturn(null);
-        when(jwtService.generateJwtToken(anyString())).thenReturn("token");
+        when(jwtService.generateJwtToken(anyMap(), eq(user))).thenReturn("token");
 
         userService.authenticateUser(request);
 
@@ -354,6 +357,6 @@ class UserServiceTest {
         var inOrder = inOrder(userDetailsService, authenticationManager, jwtService);
         inOrder.verify(userDetailsService).loadUserByUsername("testuser");
         inOrder.verify(authenticationManager).authenticate(any());
-        inOrder.verify(jwtService).generateJwtToken("testuser");
+        inOrder.verify(jwtService).generateJwtToken(anyMap(), eq(user));
     }
 }

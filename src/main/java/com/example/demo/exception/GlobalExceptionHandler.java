@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -40,21 +41,28 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleBadRequest(BadRequestException ex) {
         return ResponseEntity
                 .badRequest()
-                .body(new ApiError(ex.getMessage(), ex));
+                .body(new ApiError("BAD_REQUEST", ex.getMessage()));
     }
 
     @ExceptionHandler(DuplicateUsernameException.class)
     public ResponseEntity<ApiError> handleDuplicateUsername(DuplicateUsernameException ex) {
         return ResponseEntity
-                .badRequest()
-                .body(new ApiError(ex.getMessage(), ex));
+                .status(HttpStatus.CONFLICT)
+                .body(new ApiError("CONFLICT", ex.getMessage()));
     }
 
     @ExceptionHandler(DuplicateEmailException.class)
     public ResponseEntity<ApiError> handleDuplicateEmail(DuplicateEmailException ex) {
         return ResponseEntity
-                .badRequest()
-                .body(new ApiError(ex.getMessage(), ex));
+                .status(HttpStatus.CONFLICT)
+                .body(new ApiError("CONFLICT", ex.getMessage()));
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiError> handleAccessDenied(AccessDeniedException ex) {
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(new ApiError("FORBIDDEN", "You do not have permission to access this resource"));
     }
 
     @ExceptionHandler(Exception.class)

@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -32,6 +33,7 @@ public class AnalyticsController {
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = AnalyticsService.AuthorStats.class)))),
             @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
+    @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR')")
     @GetMapping("/top-authors")
     public ResponseEntity<List<AnalyticsService.AuthorStats>> getTopAuthors(
             @Parameter(description = "Maximum number of authors to return")
@@ -45,6 +47,7 @@ public class AnalyticsController {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved total posts count"),
             @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
+    @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR')")
     @GetMapping("/total-posts")
     public ResponseEntity<Long> getTotalPosts() {
         return ResponseEntity.ok(analyticsService.getTotalPosts());
@@ -55,6 +58,7 @@ public class AnalyticsController {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved total users count"),
             @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
+    @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR')")
     @GetMapping("/total-users")
     public ResponseEntity<Long> getTotalUsers() {
         return ResponseEntity.ok(analyticsService.getTotalUsers());
@@ -66,6 +70,7 @@ public class AnalyticsController {
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = AnalyticsService.TagStats.class)))),
             @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
+    @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR')")
     @GetMapping("/top-tags")
     public ResponseEntity<List<AnalyticsService.TagStats>> getTopTags(
             @Parameter(description = "Maximum number of tags to return")
@@ -79,6 +84,7 @@ public class AnalyticsController {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved average reviews count"),
             @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
+    @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR')")
     @GetMapping("/average-reviews")
     public ResponseEntity<Double> getAverageReviews() {
         return ResponseEntity.ok(analyticsService.getAverageReviewsPerPost());

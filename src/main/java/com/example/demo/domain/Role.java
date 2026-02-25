@@ -1,5 +1,5 @@
 package com.example.demo.domain;
 
 public enum Role {
-    USER, ADMIN
+    AUTHOR, READER, USER, ADMIN
 }

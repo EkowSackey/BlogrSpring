@@ -1,5 +1,6 @@
 package com.example.demo.controllers;
 
+import com.example.demo.services.TokenBlacklistService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -13,6 +14,7 @@ import com.example.demo.dto.RegisterUserRequest;
 import com.example.demo.dto.UserResponse;
 import com.example.demo.mapper.UserMapper;
 import com.example.demo.services.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +25,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -33,6 +36,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+    private final TokenBlacklistService tokenBlacklistService;
 
     @Operation(summary = "Register a new user", description = "Registers a new user and returns the user details")
     @ApiResponses(value = {
@@ -56,7 +60,22 @@ public class UserController {
         return ResponseEntity.ok(userService.authenticateUser(request));
     }
 
+    @Operation(summary = "Logout user", description = "Invalidates the current JWT token")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User logged out successfully")
+    })
+    @PostMapping("/auth/logout")
+    public ResponseEntity<Void> logout(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            tokenBlacklistService.blacklistToken(token);
+        }
+        return ResponseEntity.ok().build();
+    }
+
     @Operation(summary = "Get all users", description = "Retrieves a paginated list of users")
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<Page<UserResponse>> getAllUsers(
             @PageableDefault(size = 10, sort = "dateCreated", direction = Sort.Direction.DESC)
@@ -74,6 +93,7 @@ public class UserController {
                     content = @Content(schema = @Schema(implementation = UserResponse.class))),
             @ApiResponse(responseCode = "404", description = "User not found")
     })
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<UserResponse> getUser(@Parameter(description = "ID of the user to be retrieved") @PathVariable String id){
         User user = userService.getUserById(id);

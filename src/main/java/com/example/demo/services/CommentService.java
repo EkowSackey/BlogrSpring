@@ -3,6 +3,7 @@ package com.example.demo.services;
 import com.example.demo.domain.Comment;
 import com.example.demo.domain.Post;
 import com.example.demo.repositories.CommentRepository;
+import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -16,16 +17,12 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Date;
 
 @Service
+@RequiredArgsConstructor
 public class CommentService {
 
     private final CommentRepository commentRepo;
 
     private final MongoTemplate mongoTemplate;
-
-    public CommentService(CommentRepository commentRepo, MongoTemplate mongoTemplate) {
-        this.commentRepo = commentRepo;
-        this.mongoTemplate = mongoTemplate;
-    }
 
     @Transactional
     public Comment createComment(String commentBody, String postId){

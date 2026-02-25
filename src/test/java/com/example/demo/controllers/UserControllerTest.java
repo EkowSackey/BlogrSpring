@@ -1,11 +1,14 @@
 package com.example.demo.controllers;
 
+import com.example.demo.config.OAuth2LoginSuccessHandler;
 import com.example.demo.config.SecurityConfig;
 import com.example.demo.domain.Role;
 import com.example.demo.domain.User;
 import com.example.demo.dto.AuthenticateUserRequest;
 import com.example.demo.dto.RegisterUserRequest;
 import com.example.demo.filter.JwtAuthFilter;
+import com.example.demo.services.CustomOAuth2UserService;
+import com.example.demo.services.TokenBlacklistService;
 import com.example.demo.services.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
@@ -53,6 +56,15 @@ class UserControllerTest {
     @MockBean
     private AuthenticationProvider authenticationProvider;
 
+    @MockBean
+    private CustomOAuth2UserService customOAuth2UserService;
+
+    @MockBean
+    private OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
+
+    @MockBean
+    private TokenBlacklistService tokenBlacklistService;
+
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -73,7 +85,7 @@ class UserControllerTest {
         sampleUser.setUserId("user123");
         sampleUser.setUsername("testuser");
         sampleUser.setEmail("test@example.com");
-        sampleUser.setRoles(List.of(Role.USER));
+        sampleUser.setRoles(List.of(Role.READER));
         sampleUser.setCreatedAt(Instant.now());
     }
 
@@ -112,7 +124,7 @@ class UserControllerTest {
     }
 
     @Test
-    @WithMockUser(authorities = "ADMIN")
+    @WithMockUser(authorities = "ROLE_ADMIN")
     void getAllUsers_shouldReturnPageForAdmin() throws Exception {
         Page<User> page = new PageImpl<>(Collections.singletonList(sampleUser));
         when(userService.getAllUsers(any(Pageable.class))).thenReturn(page);
@@ -123,7 +135,7 @@ class UserControllerTest {
     }
 
     @Test
-    @WithMockUser(authorities = "USER")
+    @WithMockUser(authorities = "ROLE_READER")
     void getAllUsers_shouldReturnForbiddenForUser() throws Exception {
         
         mockMvc.perform(get("/api/v1/users"))
@@ -131,12 +143,13 @@ class UserControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(authorities = "ROLE_ADMIN")
     void getUser_shouldReturnUser() throws Exception {
 
         when(userService.getUserById("user123")).thenReturn(sampleUser);
 
         mockMvc.perform(get("/api/v1/users/user123"))
-                .andExpect(status().isForbidden()); // Currently forbidden based on SecurityConfig
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.userId").value("user123"));
     }
 }

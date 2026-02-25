@@ -1,12 +1,15 @@
 package com.example.demo.controllers;
 
+import com.example.demo.config.OAuth2LoginSuccessHandler;
 import com.example.demo.config.SecurityConfig;
 import com.example.demo.domain.Post;
 import com.example.demo.dto.CreatePostRequest;
 import com.example.demo.dto.UpdatePostRequest;
 import com.example.demo.dto.ReviewRequest;
 import com.example.demo.filter.JwtAuthFilter;
+import com.example.demo.services.CustomOAuth2UserService;
 import com.example.demo.services.PostService;
+import com.example.demo.services.TokenBlacklistService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
@@ -53,6 +56,15 @@ class PostControllerTest {
     @MockBean
     private AuthenticationProvider authenticationProvider;
 
+    @MockBean
+    private CustomOAuth2UserService customOAuth2UserService;
+
+    @MockBean
+    private OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
+
+    @MockBean
+    private TokenBlacklistService tokenBlacklistService;
+
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -79,7 +91,7 @@ class PostControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(authorities = "ROLE_AUTHOR")
     void createPost_shouldReturnCreated() throws Exception {
         CreatePostRequest request = new CreatePostRequest();
         request.setTitle("Test Title");
@@ -98,7 +110,7 @@ class PostControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(authorities = "ROLE_READER")
     void getPost_shouldReturnPost() throws Exception {
         when(postService.getPostById("123")).thenReturn(samplePost);
 
@@ -109,7 +121,7 @@ class PostControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(authorities = "ROLE_READER")
     void getAllPosts_shouldReturnPage() throws Exception {
         Page<Post> page = new PageImpl<>(Collections.singletonList(samplePost));
         when(postService.getAllPosts(any(Pageable.class))).thenReturn(page);
@@ -120,7 +132,7 @@ class PostControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(authorities = "ROLE_READER")
     void getAllPosts_withAuthorAndTag_shouldReturnBadRequest() throws Exception {
         mockMvc.perform(get("/api/v1/posts")
                         .param("author", "user1")
@@ -129,7 +141,7 @@ class PostControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(authorities = "ROLE_AUTHOR")
     void updatePost_shouldReturnUpdatedPost() throws Exception {
         UpdatePostRequest request = new UpdatePostRequest();
         request.setTitle("Updated Title");
@@ -151,7 +163,7 @@ class PostControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(authorities = "ROLE_READER")
     void reviewPost_shouldReturnPost() throws Exception {
         ReviewRequest request = new ReviewRequest();
         request.setStars(5);
@@ -166,7 +178,7 @@ class PostControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(authorities = "ROLE_AUTHOR")
     void deletePost_shouldReturnNoContent() throws Exception {
         mockMvc.perform(delete("/api/v1/posts/123")
                         .with(csrf()))

@@ -1,8 +1,11 @@
 package com.example.demo.controllers;
 
+import com.example.demo.config.OAuth2LoginSuccessHandler;
 import com.example.demo.config.SecurityConfig;
 import com.example.demo.filter.JwtAuthFilter;
 import com.example.demo.services.AnalyticsService;
+import com.example.demo.services.CustomOAuth2UserService;
+import com.example.demo.services.TokenBlacklistService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
@@ -43,6 +46,15 @@ class AnalyticsControllerTest {
     @MockBean
     private AuthenticationProvider authenticationProvider;
 
+    @MockBean
+    private CustomOAuth2UserService customOAuth2UserService;
+
+    @MockBean
+    private OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
+
+    @MockBean
+    private TokenBlacklistService tokenBlacklistService;
+
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -58,7 +70,7 @@ class AnalyticsControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(authorities = "ROLE_ADMIN")
     void getTopAuthors_shouldReturnList() throws Exception {
         List<AnalyticsService.AuthorStats> stats = List.of(
                 new AnalyticsService.AuthorStats("author1", 10L)
@@ -72,7 +84,7 @@ class AnalyticsControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(authorities = "ROLE_ADMIN")
     void getTotalPosts_shouldReturnCount() throws Exception {
         when(analyticsService.getTotalPosts()).thenReturn(100L);
 
@@ -82,7 +94,7 @@ class AnalyticsControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(authorities = "ROLE_ADMIN")
     void getTotalUsers_shouldReturnCount() throws Exception {
         when(analyticsService.getTotalUsers()).thenReturn(50L);
 
@@ -92,7 +104,7 @@ class AnalyticsControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(authorities = "ROLE_ADMIN")
     void getTopTags_shouldReturnList() throws Exception {
         List<AnalyticsService.TagStats> stats = List.of(
                 new AnalyticsService.TagStats("tag1", 20L)
@@ -106,7 +118,7 @@ class AnalyticsControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(authorities = "ROLE_ADMIN")
     void getAverageReviews_shouldReturnDouble() throws Exception {
         when(analyticsService.getAverageReviewsPerPost()).thenReturn(3.5);
 
@@ -116,8 +128,8 @@ class AnalyticsControllerTest {
     }
 
     @Test
-    void getAnalytics_withoutAuth_shouldReturnForbidden() throws Exception {
+    void getAnalytics_withoutAuth_shouldReturnUnauthorized() throws Exception {
         mockMvc.perform(get("/api/v1/analytics/total-posts"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 }
