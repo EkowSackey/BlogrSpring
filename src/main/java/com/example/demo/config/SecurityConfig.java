@@ -2,10 +2,10 @@ package com.example.demo.config;
 
 import com.example.demo.filter.JwtAuthFilter;
 import com.example.demo.services.CustomOAuth2UserService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -31,20 +31,14 @@ public class SecurityConfig {
     private final CustomOAuth2UserService customOAuth2UserService;
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 
-    private static final String[] PUBLIC_SWAGGER_PATHS = {
+    private static final String[] PUBLIC_PATHS = {
             "/swagger-ui/**",
             "/swagger-ui.html",
             "/v3/api-docs/**",
             "/swagger-resources/**",
-            "/webjars/**"
-    };
-
-    private static final String[] PUBLIC_GRAPHQL_PATHS = {
+            "/webjars/**",
             "/graphql/**",
-            "/graphiql/**"
-    };
-
-    private static final String[] PUBLIC_AUTH_PATHS = {
+            "/graphiql/**",
             "/api/v1/users/auth/register",
             "/api/v1/users/auth/login"
     };
@@ -54,31 +48,20 @@ public class SecurityConfig {
         http.csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(httpRequest -> {
-                    httpRequest.requestMatchers(PUBLIC_SWAGGER_PATHS).permitAll();
-                    httpRequest.requestMatchers(PUBLIC_GRAPHQL_PATHS).permitAll();
-                    httpRequest.requestMatchers(PUBLIC_AUTH_PATHS).permitAll();
-                    
-                    // User Management
-                    httpRequest.requestMatchers("/api/v1/users/**").hasAnyAuthority("ADMIN");
-                    
-                    // Analytics
-                    httpRequest.requestMatchers("/api/v1/analytics/**").hasAnyAuthority("ADMIN", "AUTHOR");
-
-                    // Post Management
-                    httpRequest.requestMatchers(HttpMethod.POST, "/api/v1/posts/**").hasAnyAuthority("ADMIN", "AUTHOR");
-                    httpRequest.requestMatchers(HttpMethod.PUT, "/api/v1/posts/**").hasAnyAuthority("ADMIN", "AUTHOR");
-                    httpRequest.requestMatchers(HttpMethod.DELETE, "/api/v1/posts/**").hasAnyAuthority("ADMIN", "AUTHOR");
-                    httpRequest.requestMatchers(HttpMethod.GET, "/api/v1/posts/**").hasAnyAuthority("ADMIN", "AUTHOR", "READER");
-
-                    // Comments
-                    httpRequest.requestMatchers("/api/v1/comments/**").hasAnyAuthority("ADMIN", "AUTHOR", "READER");
-
+                    // Permit all public paths
+                    httpRequest.requestMatchers(PUBLIC_PATHS).permitAll();
+                    // All other requests must be authenticated
                     httpRequest.anyRequest().authenticated();
                 })
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+                        })
+                )
                 .oauth2Login(oauth2 -> oauth2
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userService(customOAuth2UserService)

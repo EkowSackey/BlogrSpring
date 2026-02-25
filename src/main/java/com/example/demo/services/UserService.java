@@ -47,7 +47,7 @@ public class UserService {
 
         String password = passwordEncoder.encode(request.getPassword());
         List<Role> roles = new ArrayList<>();
-        roles.add( Role.USER);
+        roles.add( Role.READER);
 
         User user = new User();
         user.setEmail(email);
