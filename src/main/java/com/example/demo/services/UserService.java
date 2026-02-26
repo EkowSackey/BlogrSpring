@@ -14,11 +14,13 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -35,8 +37,8 @@ public class UserService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
-    private final UserDetailsService userDetailsService;
 
+    @Transactional
     @CacheEvict(value = "users", allEntries = true)
     public User registerUser(RegisterUserRequest request){
         String username = request.getUsername();
@@ -59,12 +61,16 @@ public class UserService {
         return userRepo.save(user);
     }
 
+    @Transactional(readOnly = true)
     public String authenticateUser(AuthenticateUserRequest request){
-        User user = (User) userDetailsService.loadUserByUsername(request.getUsername());
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                request.getUsername(),
-                request.getPassword()
-        ));
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getUsername(),
+                        request.getPassword()
+                )
+        );
+
+        User user = (User) authentication.getPrincipal();
         
         Map<String, Object> extraClaims = new HashMap<>();
         extraClaims.put("roles", user.getAuthorities());
@@ -72,8 +78,12 @@ public class UserService {
         return jwtService.generateJwtToken(extraClaims, user);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
+    @Transactional(readOnly = true)
     public Page<User> getAllUsers(Pageable pageable){return userRepo.findAll(pageable);}
 
+    @PreAuthorize("hasRole('ADMIN')")
+    @Transactional(readOnly = true)
     @Cacheable(value = "users", key = "#id")
     public User getUserById(String id){
         return userRepo.findById(id)

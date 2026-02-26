@@ -1,7 +1,6 @@
 package com.example.demo.services;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.Keys;
@@ -24,6 +23,7 @@ class JwtServiceTest {
     private JwtService jwtService;
     private Key signingKey;
     private UserDetails userDetails;
+    private final long EXPIRATION = 86400000; // 24 hours
 
     @BeforeEach
     void setUp() {
@@ -37,6 +37,7 @@ class JwtServiceTest {
         signingKey = Keys.hmacShaKeyFor(Base64.getDecoder().decode(testSecret));
 
         ReflectionTestUtils.setField(jwtService, "secret", testSecret);
+        ReflectionTestUtils.setField(jwtService, "jwtExpiration", EXPIRATION);
 
         List<GrantedAuthority> authorities = new ArrayList<>();
         authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
@@ -117,7 +118,7 @@ class JwtServiceTest {
     }
 
     @Test
-    void isTokenValid_shouldThrowException_whenTokenExpired() {
+    void isTokenValid_shouldReturnFalse_whenTokenExpired() {
         String expiredToken = Jwts.builder()
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis() - 10000))
@@ -125,9 +126,15 @@ class JwtServiceTest {
                 .signWith(signingKey)
                 .compact();
 
-        assertThrows(ExpiredJwtException.class, () -> {
-            jwtService.isTokenValid(expiredToken);
-        });
+        boolean isValid = jwtService.isTokenValid(expiredToken);
+        assertFalse(isValid);
+    }
+
+    @Test
+    void isTokenValid_shouldReturnFalse_whenTokenInvalid() {
+        String invalidToken = "invalid.token.here";
+        boolean isValid = jwtService.isTokenValid(invalidToken);
+        assertFalse(isValid);
     }
 
     @Test
@@ -142,7 +149,7 @@ class JwtServiceTest {
     @Test
     void extractClaims_shouldThrowException_whenSignatureInvalid() {
         String token = jwtService.generateJwtToken(userDetails);
-        String[] parts = token.split("\\.");
+        String[] parts = token.split("\\.").length == 3 ? token.split("\\.") : new String[3];
         String tamperedToken = parts[0] + "." + parts[1] + ".tampered";
 
         assertThrows(SignatureException.class, () -> {

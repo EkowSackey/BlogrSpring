@@ -25,7 +25,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -43,7 +42,6 @@ public class PostController {
                     content = @Content(schema = @Schema(implementation = PostResponse.class))),
             @ApiResponse(responseCode = "400", description = "Invalid input")
     })
-    @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR')")
     @PostMapping()
     public ResponseEntity<PostResponse> createPost(
             @Valid @RequestBody CreatePostRequest request
@@ -59,7 +57,6 @@ public class PostController {
                     content = @Content(schema = @Schema(implementation = PostResponse.class))),
             @ApiResponse(responseCode = "404", description = "Post not found")
     })
-    @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR', 'READER')")
     @GetMapping("/{id}")
     public ResponseEntity<PostResponse> getPost(@Parameter(description = "ID of the post to be retrieved") @PathVariable String id){
         Post post = postService.getPostById(id);
@@ -67,7 +64,6 @@ public class PostController {
     }
 
     @Operation(summary = "Get all posts", description = "Retrieves a paginated list of posts, optionally filtered by author or tag")
-    @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR', 'READER')")
     @GetMapping
     public ResponseEntity<Page<PostResponse>> getAllPosts(
             @Parameter(description = "Filter posts by author") @RequestParam(required = false) String author,
@@ -101,7 +97,6 @@ public class PostController {
             @ApiResponse(responseCode = "404", description = "Post not found"),
             @ApiResponse(responseCode = "400", description = "Invalid input")
     })
-    @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR')")
     @PutMapping("/{id}")
     public ResponseEntity<PostResponse> updatePost(
             @Parameter(description = "ID of the post to be updated") @PathVariable String id,
@@ -117,7 +112,6 @@ public class PostController {
                     content = @Content(schema = @Schema(implementation = PostResponse.class))),
             @ApiResponse(responseCode = "404", description = "Post not found")
     })
-    @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR', 'READER')")
     @PatchMapping("/{id}")
     public ResponseEntity<PostResponse> reviewPost( @Valid @RequestBody ReviewRequest request, @Parameter(description = "ID of the post to be reviewed") @PathVariable String id){
         Post post= postService.addReview(id, request);
@@ -129,7 +123,6 @@ public class PostController {
             @ApiResponse(responseCode = "204", description = "Post deleted successfully"),
             @ApiResponse(responseCode = "404", description = "Post not found")
     })
-    @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePost(@Parameter(description = "ID of the post to be deleted") @PathVariable String id) {
         postService.deletePost(id);

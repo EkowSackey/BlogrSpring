@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,7 @@ public class CommentService {
 
     private final MongoTemplate mongoTemplate;
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR', 'READER')")
     @Transactional
     public Comment createComment(String commentBody, String postId){
         Comment comment = new Comment(commentBody);
@@ -44,6 +46,8 @@ public class CommentService {
         return comment;
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR')")
+    @Transactional
     public void deleteComment(String id){
         commentRepo.deleteById(id);
     }

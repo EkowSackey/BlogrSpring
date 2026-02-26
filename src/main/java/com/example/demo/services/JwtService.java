@@ -5,6 +5,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,9 @@ public class JwtService {
     @Value("${jwt.secret}")
     private String secret;
 
+    @Value("${jwt.expiration}")
+    private long jwtExpiration;
+
     Key generateSigningKey(){
         return Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret));
     }
@@ -34,7 +38,7 @@ public class JwtService {
                 .setClaims(extraClaims)
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + (1000 * 60 * 60 * 24)))
+                .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
                 .signWith(generateSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -61,7 +65,19 @@ public class JwtService {
     }
 
     public boolean isTokenValid(String jwtToken){
-        return new Date().before(extractExpiration(jwtToken));
+        try {
+            return new Date().before(extractExpiration(jwtToken));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public String extractTokenFromRequest(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            return authHeader.substring(7);
+        }
+        return null;
     }
 
 }

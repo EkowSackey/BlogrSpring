@@ -35,14 +35,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
 
-        String authHeader = request.getHeader("Authorization");
+        String jwtToken = jwtService.extractTokenFromRequest(request);
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        if (jwtToken == null) {
             filterChain.doFilter(request, response);
             return;
         }
-
-        String jwtToken = authHeader.substring(7);
 
         // Check if token is blacklisted
         if (tokenBlacklistService.isBlacklisted(jwtToken)) {
@@ -51,22 +49,27 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return;
         }
 
+        // Validate token structure and expiration
+        if (!jwtService.isTokenValid(jwtToken)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String username = jwtService.extractSubject(jwtToken);
 
+        // Load user and set authentication (DB hit)
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             User user = (User) userDetailsService.loadUserByUsername(username);
             
-            if (jwtService.isTokenValid(jwtToken)) {
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        user,
-                        null,
-                        user.getAuthorities()
-                );
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
-                
-                log.info("User '{}' accessed endpoint '{}' with method '{}'", username, request.getRequestURI(), request.getMethod());
-            }
+            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                    user,
+                    null,
+                    user.getAuthorities()
+            );
+            authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            SecurityContextHolder.getContext().setAuthentication(authToken);
+            
+            log.info("User '{}' authenticated via JWT for endpoint '{}'", username, request.getRequestURI());
         }
 
         filterChain.doFilter(request, response);

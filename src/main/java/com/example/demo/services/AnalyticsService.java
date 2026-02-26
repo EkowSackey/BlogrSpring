@@ -10,7 +10,9 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.data.mongodb.core.aggregation.ConditionalOperators;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
@@ -25,6 +27,8 @@ public class AnalyticsService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR')")
+    @Transactional(readOnly = true)
     public List<AuthorStats> getTopAuthors(int limit) {
         Aggregation aggregation = newAggregation(
                 group("author").count().as("postCount"),
@@ -40,14 +44,20 @@ public class AnalyticsService {
         return results.getMappedResults();
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR')")
+    @Transactional(readOnly = true)
     public long getTotalPosts() {
         return postRepository.count();
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR')")
+    @Transactional(readOnly = true)
     public long getTotalUsers() {
         return userRepository.count();
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR')")
+    @Transactional(readOnly = true)
     public List<TagStats> getTopTags(int limit) {
         Aggregation aggregation = newAggregation(
                 unwind("tagSlugs"),
@@ -64,6 +74,8 @@ public class AnalyticsService {
         return results.getMappedResults();
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR')")
+    @Transactional(readOnly = true)
     public double getAverageReviewsPerPost() {
         Aggregation aggregation = newAggregation(
                 project()

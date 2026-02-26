@@ -71,7 +71,7 @@ class AnalyticsControllerTest {
 
     @Test
     @WithMockUser(authorities = "ROLE_ADMIN")
-    void getTopAuthors_shouldReturnList() throws Exception {
+    void getTopAuthors_shouldReturnList_forAdmin() throws Exception {
         List<AnalyticsService.AuthorStats> stats = List.of(
                 new AnalyticsService.AuthorStats("author1", 10L)
         );
@@ -81,6 +81,14 @@ class AnalyticsControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].authorName").value("author1"))
                 .andExpect(jsonPath("$[0].postCount").value(10));
+    }
+
+    @Test
+    @WithMockUser(authorities = "ROLE_AUTHOR")
+    void getTopAuthors_shouldReturnForbidden_forAuthor() throws Exception {
+        // Even though the service allows AUTHOR, the filter chain now restricts /api/v1/analytics/** to ADMIN
+        mockMvc.perform(get("/api/v1/analytics/top-authors"))
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -125,6 +133,13 @@ class AnalyticsControllerTest {
         mockMvc.perform(get("/api/v1/analytics/average-reviews"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("3.5"));
+    }
+
+    @Test
+    @WithMockUser(authorities = "ROLE_READER")
+    void getAnalytics_shouldReturnForbidden_forReader() throws Exception {
+        mockMvc.perform(get("/api/v1/analytics/total-posts"))
+                .andExpect(status().isForbidden());
     }
 
     @Test
