@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -25,23 +26,51 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         OAuth2User oAuth2User = super.loadUser(userRequest);
 
         String email = oAuth2User.getAttribute("email");
-        String name = oAuth2User.getAttribute("name");
-
+        
         Optional<User> userOptional = userRepository.findByEmail(email);
-        User user;
-        if (userOptional.isPresent()) {
-            user = userOptional.get();
-            // Update existing user details if needed
-            userRepository.save(user);
-        } else {
-            user = new User();
+        
+        if (userOptional.isEmpty()) {
+            // Create new user if they don't exist
+            User user = new User();
             user.setEmail(email);
-            user.setUsername(name);
+            
+            // Generate a unique username
+            String baseUsername = generateBaseUsername(email, oAuth2User.getAttribute("name"));
+            user.setUsername(ensureUniqueUsername(baseUsername));
+            
             user.setRoles(Collections.singletonList(Role.READER));
             user.setCreatedAt(Instant.now());
             userRepository.save(user);
         }
+        // If user exists, we just return the oAuth2User
 
         return oAuth2User;
+    }
+
+    private String generateBaseUsername(String email, String name) {
+        if (email != null) {
+            return email.split("@")[0];
+        }
+        if (name != null) {
+            return name.toLowerCase().replaceAll("\\s+", "");
+        }
+        return "user";
+    }
+
+    private String ensureUniqueUsername(String baseUsername) {
+        String username = baseUsername;
+        int counter = 1;
+        
+        while (userRepository.existsByUsername(username)) {
+            // If collision, append a short random string or a counter
+            String suffix = UUID.randomUUID().toString().substring(0, 4);
+            username = baseUsername + "_" + suffix;
+            
+            if (counter++ > 10) {
+                username = baseUsername + "_" + UUID.randomUUID().toString();
+                break;
+            }
+        }
+        return username;
     }
 }

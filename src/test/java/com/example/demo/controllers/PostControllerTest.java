@@ -111,6 +111,20 @@ class PostControllerTest {
 
     @Test
     @WithMockUser(authorities = "ROLE_READER")
+    void createPost_shouldReturnForbidden_forReader() throws Exception {
+        CreatePostRequest request = new CreatePostRequest();
+        request.setTitle("Test Title");
+        request.setContent("Test Content");
+
+        mockMvc.perform(post("/api/v1/posts")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(authorities = "ROLE_READER")
     void getPost_shouldReturnPost() throws Exception {
         when(postService.getPostById("123")).thenReturn(samplePost);
 
@@ -164,6 +178,19 @@ class PostControllerTest {
 
     @Test
     @WithMockUser(authorities = "ROLE_READER")
+    void updatePost_shouldReturnForbidden_forReader() throws Exception {
+        UpdatePostRequest request = new UpdatePostRequest();
+        request.setTitle("Updated Title");
+
+        mockMvc.perform(put("/api/v1/posts/123")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(authorities = "ROLE_READER")
     void reviewPost_shouldReturnPost() throws Exception {
         ReviewRequest request = new ReviewRequest();
         request.setStars(5);
@@ -183,5 +210,13 @@ class PostControllerTest {
         mockMvc.perform(delete("/api/v1/posts/123")
                         .with(csrf()))
                 .andExpect(status().isNoContent());
+    }
+
+    @Test
+    @WithMockUser(authorities = "ROLE_READER")
+    void deletePost_shouldReturnForbidden_forReader() throws Exception {
+        mockMvc.perform(delete("/api/v1/posts/123")
+                        .with(csrf()))
+                .andExpect(status().isForbidden());
     }
 }

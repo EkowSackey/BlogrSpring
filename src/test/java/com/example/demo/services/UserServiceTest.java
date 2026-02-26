@@ -19,7 +19,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Arrays;
@@ -44,9 +44,6 @@ class UserServiceTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
-
-    @Mock
-    private UserDetailsService userDetailsService;
 
     @InjectMocks
     private UserService userService;
@@ -195,9 +192,10 @@ class UserServiceTest {
         user.setPassword("encodedPassword");
         user.setRoles(List.of(Role.READER));
 
-        when(userDetailsService.loadUserByUsername("testuser")).thenReturn(user);
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(user);
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
-                .thenReturn(null);
+                .thenReturn(authentication);
         when(jwtService.generateJwtToken(anyMap(), eq(user))).thenReturn("jwt-token-123");
 
         String token = userService.authenticateUser(request);
@@ -206,7 +204,6 @@ class UserServiceTest {
         assertNotNull(token);
         assertEquals("jwt-token-123", token);
 
-        verify(userDetailsService, times(1)).loadUserByUsername("testuser");
         verify(authenticationManager, times(1)).authenticate(any(UsernamePasswordAuthenticationToken.class));
         verify(jwtService, times(1)).generateJwtToken(anyMap(), eq(user));
     }
@@ -221,9 +218,10 @@ class UserServiceTest {
         user.setUsername("testuser");
         user.setRoles(List.of(Role.READER));
 
-        when(userDetailsService.loadUserByUsername("testuser")).thenReturn(user);
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(user);
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
-                .thenReturn(null);
+                .thenReturn(authentication);
         when(jwtService.generateJwtToken(anyMap(), eq(user))).thenReturn("token");
 
         userService.authenticateUser(request);
@@ -335,28 +333,5 @@ class UserServiceTest {
                         user.getRoles().size() == 1 &&
                         user.getRoles().contains(Role.READER)
         ));
-    }
-
-    @Test
-    void authenticateUser_shouldLoadUserBeforeAuthentication() {
-        AuthenticateUserRequest request = new AuthenticateUserRequest();
-        request.setUsername("testuser");
-        request.setPassword("password123");
-
-        User user = new User();
-        user.setUsername("testuser");
-        user.setRoles(List.of(Role.READER));
-
-        when(userDetailsService.loadUserByUsername("testuser")).thenReturn(user);
-        when(authenticationManager.authenticate(any())).thenReturn(null);
-        when(jwtService.generateJwtToken(anyMap(), eq(user))).thenReturn("token");
-
-        userService.authenticateUser(request);
-
-
-        var inOrder = inOrder(userDetailsService, authenticationManager, jwtService);
-        inOrder.verify(userDetailsService).loadUserByUsername("testuser");
-        inOrder.verify(authenticationManager).authenticate(any());
-        inOrder.verify(jwtService).generateJwtToken(anyMap(), eq(user));
     }
 }

@@ -20,6 +20,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.query.TextCriteria;
 import org.mockito.ArgumentCaptor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -213,6 +214,7 @@ class PostServiceTest {
 
         Post existingPost = new Post("Old Title", "Old Content", List.of());
         existingPost.setPostId(postId);
+        existingPost.setAuthor("testuser"); // Set author to match authenticated user
 
         when(postRepo.findPostByPostId(postId)).thenReturn(Optional.of(existingPost));
         when(postRepo.save(any(Post.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -228,6 +230,21 @@ class PostServiceTest {
 
         verify(postRepo, times(1)).findPostByPostId(postId);
         verify(postRepo, times(1)).save(any(Post.class));
+    }
+
+    @Test
+    void updatePost_shouldThrowException_whenUserNotAuthor() {
+        String postId = "post123";
+        UpdatePostRequest request = new UpdatePostRequest();
+        
+        Post existingPost = new Post("Title", "Content", List.of());
+        existingPost.setPostId(postId);
+        existingPost.setAuthor("differentuser"); // Different from "testuser"
+
+        when(postRepo.findPostByPostId(postId)).thenReturn(Optional.of(existingPost));
+
+        assertThrows(AccessDeniedException.class, () -> postService.updatePost(postId, request));
+        verify(postRepo, never()).save(any(Post.class));
     }
 
     @Test
@@ -325,12 +342,30 @@ class PostServiceTest {
     void deletePost_shouldDeletePostSuccessfully() {
 
         String postId = "post123";
+        Post post = new Post("Title", "Content", List.of());
+        post.setPostId(postId);
+        post.setAuthor("testuser");
+
+        when(postRepo.findPostByPostId(postId)).thenReturn(Optional.of(post));
         doNothing().when(postRepo).deleteByPostId(postId);
 
 
         postService.deletePost(postId);
 
         verify(postRepo, times(1)).deleteByPostId(postId);
+    }
+
+    @Test
+    void deletePost_shouldThrowException_whenUserNotAuthor() {
+        String postId = "post123";
+        Post post = new Post("Title", "Content", List.of());
+        post.setPostId(postId);
+        post.setAuthor("differentuser");
+
+        when(postRepo.findPostByPostId(postId)).thenReturn(Optional.of(post));
+
+        assertThrows(AccessDeniedException.class, () -> postService.deletePost(postId));
+        verify(postRepo, never()).deleteByPostId(postId);
     }
 
     @Test
@@ -362,6 +397,7 @@ class PostServiceTest {
 
         Post existingPost = new Post("Old", "Old", List.of());
         existingPost.setPostId(postId);
+        existingPost.setAuthor("testuser");
 
         when(postRepo.findPostByPostId(postId)).thenReturn(Optional.of(existingPost));
         when(postRepo.save(any(Post.class))).thenAnswer(invocation -> invocation.getArgument(0));

@@ -8,6 +8,7 @@ import com.example.demo.dto.AuthenticateUserRequest;
 import com.example.demo.dto.RegisterUserRequest;
 import com.example.demo.filter.JwtAuthFilter;
 import com.example.demo.services.CustomOAuth2UserService;
+import com.example.demo.services.JwtService;
 import com.example.demo.services.TokenBlacklistService;
 import com.example.demo.services.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -64,6 +65,9 @@ class UserControllerTest {
 
     @MockBean
     private TokenBlacklistService tokenBlacklistService;
+
+    @MockBean
+    private JwtService jwtService;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -137,7 +141,7 @@ class UserControllerTest {
     @Test
     @WithMockUser(authorities = "ROLE_READER")
     void getAllUsers_shouldReturnForbiddenForUser() throws Exception {
-        
+
         mockMvc.perform(get("/api/v1/users"))
                 .andExpect(status().isForbidden());
     }
