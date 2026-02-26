@@ -53,8 +53,11 @@ public class SecurityConfig {
             "/api/v1/analytics/**"
     };
 
-    private static final String[] AUTHOR_OR_ADMIN_PATHS = {
-            "/api/v1/posts/**",
+    private static final String[] POST_MODIFICATION_PATHS = {
+            "/api/v1/posts/**"
+    };
+
+    private static final String[] COMMENT_MODIFICATION_PATHS = {
             "/api/v1/comments/**"
     };
 
@@ -63,22 +66,26 @@ public class SecurityConfig {
         http.csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(httpRequest -> {
-                    // 1. Permit all public paths (No auth required)
+                    // 1. Permit all public paths
                     httpRequest.requestMatchers(PUBLIC_PATHS).permitAll();
                     
                     // 2. Explicitly allow logout for ANY authenticated user
-                    // This must come BEFORE the admin matcher
                     httpRequest.requestMatchers("/api/v1/users/auth/logout").authenticated();
                     
                     // 3. Admin only paths
                     httpRequest.requestMatchers(ADMIN_PATHS).hasRole("ADMIN");
                     
-                    // 4. Author or Admin paths for modification
-                    httpRequest.requestMatchers(HttpMethod.POST, AUTHOR_OR_ADMIN_PATHS).hasAnyRole("ADMIN", "AUTHOR");
-                    httpRequest.requestMatchers(HttpMethod.PUT, AUTHOR_OR_ADMIN_PATHS).hasAnyRole("ADMIN", "AUTHOR");
-                    httpRequest.requestMatchers(HttpMethod.DELETE, AUTHOR_OR_ADMIN_PATHS).hasAnyRole("ADMIN", "AUTHOR");
+                    // 4. Post modification (Admin or Author)
+                    httpRequest.requestMatchers(HttpMethod.POST, POST_MODIFICATION_PATHS).hasAnyRole("ADMIN", "AUTHOR");
+                    httpRequest.requestMatchers(HttpMethod.PUT, POST_MODIFICATION_PATHS).hasAnyRole("ADMIN", "AUTHOR");
+                    httpRequest.requestMatchers(HttpMethod.DELETE, POST_MODIFICATION_PATHS).hasAnyRole("ADMIN", "AUTHOR");
+
+                    // 5. Comment creation (Admin, Author, or Reader)
+                    httpRequest.requestMatchers(HttpMethod.POST, COMMENT_MODIFICATION_PATHS).hasAnyRole("ADMIN", "AUTHOR", "READER");
+                    // Comment deletion (Admin or Author)
+                    httpRequest.requestMatchers(HttpMethod.DELETE, COMMENT_MODIFICATION_PATHS).hasAnyRole("ADMIN", "AUTHOR");
                     
-                    // 5. All other requests must be authenticated
+                    // 6. All other requests must be authenticated
                     httpRequest.anyRequest().authenticated();
                 })
                 .sessionManagement(session ->
