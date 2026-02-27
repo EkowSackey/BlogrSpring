@@ -18,13 +18,20 @@ public class CacheConfig {
         CaffeineCacheManager cacheManager = new CaffeineCacheManager(
                 "posts",
                 "users",
-                "post-pages"
+                "post-pages",
+                "analytics-posts",
+                "analytics-users",
+                "analytics-authors",
+                "analytics-tags",
+                "analytics-reviews"
         );
         
         cacheManager.setCaffeine(Caffeine.newBuilder()
                 .expireAfterWrite(10, TimeUnit.MINUTES)
                 .maximumSize(1000)
                 .recordStats());
+        
+        cacheManager.setAsyncCacheMode(true);
         
         return cacheManager;
     }

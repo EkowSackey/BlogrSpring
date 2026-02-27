@@ -12,8 +12,8 @@ import com.example.demo.repositories.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.query.TextCriteria;
@@ -40,7 +40,7 @@ public class PostService {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR')")
     @Transactional
-    @CacheEvict(value = "post-pages", allEntries = true)
+    @CacheEvict(value = {"post-pages", "analytics-posts", "analytics-authors", "analytics-tags"}, allEntries = true)
     public Post createPost(CreatePostRequest request){
 
         List<String> tags = (request.getTags() == null) ? new ArrayList<>() : request.getTags();
@@ -106,7 +106,10 @@ public class PostService {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR')")
     @Transactional
-    @CachePut(value = "posts", key = "#id")
+    @Caching(evict = {
+            @CacheEvict(value = "posts", key = "#id"),
+            @CacheEvict(value = {"analytics-tags"}, allEntries = true)
+    })
     public Post updatePost(String id, UpdatePostRequest request){
         Post post = getPostById(id);
         validatePostOwnership(post);
@@ -121,6 +124,7 @@ public class PostService {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR', 'READER')")
     @Transactional
+    @CacheEvict(value = "analytics-reviews", allEntries = true)
     public Post addReview(String id, ReviewRequest request){
         Post post = getPostById(id);
 
@@ -146,7 +150,10 @@ public class PostService {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR')")
     @Transactional
-    @CacheEvict(value = "posts", key = "#id")
+    @Caching(evict = {
+            @CacheEvict(value = "posts", key = "#id"),
+            @CacheEvict(value = {"analytics-posts", "analytics-authors", "analytics-tags", "analytics-reviews"}, allEntries = true)
+    })
     public void deletePost(String id){
         Post post = getPostById(id);
         validatePostOwnership(post);

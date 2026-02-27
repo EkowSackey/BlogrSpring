@@ -4,8 +4,9 @@ import com.example.demo.domain.Comment;
 import com.example.demo.domain.Post;
 import com.example.demo.repositories.CommentRepository;
 import lombok.RequiredArgsConstructor;
-import org.bson.types.ObjectId;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Update;
@@ -15,8 +16,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
-
 @Service
 @RequiredArgsConstructor
 public class CommentService {
@@ -24,9 +23,12 @@ public class CommentService {
     private final CommentRepository commentRepo;
 
     private final MongoTemplate mongoTemplate;
+    
+    private final CacheManager cacheManager;
 
     @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR', 'READER')")
     @Transactional
+    @CacheEvict(value = "posts", key = "#postId")
     public Comment createComment(String commentBody, String postId){
         Comment comment = new Comment(commentBody);
 
@@ -49,7 +51,24 @@ public class CommentService {
     @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR')")
     @Transactional
     public void deleteComment(String id){
-        commentRepo.deleteById(id);
+        Comment comment = commentRepo.findById(id).orElse(null);
+        if (comment != null) {
+            // Remove reference from Post
+            if (comment.getParentId() != null) {
+                mongoTemplate.update(Post.class)
+                        .matching(Criteria.where("postId").is(comment.getParentId()))
+                        .apply(new Update().pull("comments", comment))
+                        .first();
+                
+                // Evict cache for the post safely
+                Cache postsCache = cacheManager.getCache("posts");
+                if (postsCache != null) {
+                    postsCache.evict(comment.getParentId());
+                }
+            }
+            
+            commentRepo.deleteById(id);
+        }
     }
 
 }

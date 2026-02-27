@@ -39,7 +39,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     @Transactional
-    @CacheEvict(value = "users", allEntries = true)
+    @CacheEvict(value = {"users", "analytics-users"}, allEntries = true)
     public User registerUser(RegisterUserRequest request){
         String username = request.getUsername();
         if (userRepo.existsByUsername(username)) throw new DuplicateUsernameException("Username already taken");

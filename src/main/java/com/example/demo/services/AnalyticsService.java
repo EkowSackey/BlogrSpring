@@ -5,6 +5,7 @@ import com.example.demo.repositories.UserRepository;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
@@ -32,6 +33,7 @@ public class AnalyticsService {
     @Async("taskExecutor")
     @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR')")
     @Transactional(readOnly = true)
+    @Cacheable(value = "analytics-authors", key = "#limit")
     public CompletableFuture<List<AuthorStats>> getTopAuthors(int limit) {
         Aggregation aggregation = newAggregation(
                 group("author").count().as("postCount"),
@@ -50,6 +52,7 @@ public class AnalyticsService {
     @Async("taskExecutor")
     @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR')")
     @Transactional(readOnly = true)
+    @Cacheable(value = "analytics-posts", key = "'total'")
     public CompletableFuture<Long> getTotalPosts() {
         return CompletableFuture.completedFuture(postRepository.count());
     }
@@ -57,6 +60,7 @@ public class AnalyticsService {
     @Async("taskExecutor")
     @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR')")
     @Transactional(readOnly = true)
+    @Cacheable(value = "analytics-users", key = "'total'")
     public CompletableFuture<Long> getTotalUsers() {
         return CompletableFuture.completedFuture(userRepository.count());
     }
@@ -64,6 +68,7 @@ public class AnalyticsService {
     @Async("taskExecutor")
     @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR')")
     @Transactional(readOnly = true)
+    @Cacheable(value = "analytics-tags", key = "#limit")
     public CompletableFuture<List<TagStats>> getTopTags(int limit) {
         Aggregation aggregation = newAggregation(
                 unwind("tagSlugs"),
@@ -83,6 +88,7 @@ public class AnalyticsService {
     @Async("taskExecutor")
     @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR')")
     @Transactional(readOnly = true)
+    @Cacheable(value = "analytics-reviews", key = "'avg'")
     public CompletableFuture<Double> getAverageReviewsPerPost() {
         Aggregation aggregation = newAggregation(
                 project()
@@ -104,6 +110,7 @@ public class AnalyticsService {
             return CompletableFuture.completedFuture(0.0);
         }
         
+        // Handle cases where avg might return a Decimal128 or Integer
         Object avg = result.get("averageReviews");
         if (avg instanceof Number) {
             return CompletableFuture.completedFuture(((Number) avg).doubleValue());

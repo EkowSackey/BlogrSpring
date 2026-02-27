@@ -8,7 +8,7 @@ spring:
     path: /graphql
   cache:
     type: caffeine
-    cache-names: posts, users, post-pages
+    cache-names: posts, users, post-pages, analytics-posts, analytics-users, analytics-authors, analytics-tags, analytics-reviews
     caffeine:
       spec: maximumSize=1000,expireAfterWrite=10m
 
