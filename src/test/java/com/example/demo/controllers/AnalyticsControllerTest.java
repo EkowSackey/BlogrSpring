@@ -16,17 +16,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.asyncDispatch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -75,9 +77,13 @@ class AnalyticsControllerTest {
         List<AnalyticsService.AuthorStats> stats = List.of(
                 new AnalyticsService.AuthorStats("author1", 10L)
         );
-        when(analyticsService.getTopAuthors(anyInt())).thenReturn(stats);
+        when(analyticsService.getTopAuthors(anyInt())).thenReturn(CompletableFuture.completedFuture(stats));
 
-        mockMvc.perform(get("/api/v1/analytics/top-authors"))
+        MvcResult mvcResult = mockMvc.perform(get("/api/v1/analytics/top-authors"))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+
+        mockMvc.perform(asyncDispatch(mvcResult))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].authorName").value("author1"))
                 .andExpect(jsonPath("$[0].postCount").value(10));
@@ -94,9 +100,13 @@ class AnalyticsControllerTest {
     @Test
     @WithMockUser(authorities = "ROLE_ADMIN")
     void getTotalPosts_shouldReturnCount() throws Exception {
-        when(analyticsService.getTotalPosts()).thenReturn(100L);
+        when(analyticsService.getTotalPosts()).thenReturn(CompletableFuture.completedFuture(100L));
 
-        mockMvc.perform(get("/api/v1/analytics/total-posts"))
+        MvcResult mvcResult = mockMvc.perform(get("/api/v1/analytics/total-posts"))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+
+        mockMvc.perform(asyncDispatch(mvcResult))
                 .andExpect(status().isOk())
                 .andExpect(content().string("100"));
     }
@@ -104,9 +114,13 @@ class AnalyticsControllerTest {
     @Test
     @WithMockUser(authorities = "ROLE_ADMIN")
     void getTotalUsers_shouldReturnCount() throws Exception {
-        when(analyticsService.getTotalUsers()).thenReturn(50L);
+        when(analyticsService.getTotalUsers()).thenReturn(CompletableFuture.completedFuture(50L));
 
-        mockMvc.perform(get("/api/v1/analytics/total-users"))
+        MvcResult mvcResult = mockMvc.perform(get("/api/v1/analytics/total-users"))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+
+        mockMvc.perform(asyncDispatch(mvcResult))
                 .andExpect(status().isOk())
                 .andExpect(content().string("50"));
     }
@@ -117,9 +131,13 @@ class AnalyticsControllerTest {
         List<AnalyticsService.TagStats> stats = List.of(
                 new AnalyticsService.TagStats("tag1", 20L)
         );
-        when(analyticsService.getTopTags(anyInt())).thenReturn(stats);
+        when(analyticsService.getTopTags(anyInt())).thenReturn(CompletableFuture.completedFuture(stats));
 
-        mockMvc.perform(get("/api/v1/analytics/top-tags"))
+        MvcResult mvcResult = mockMvc.perform(get("/api/v1/analytics/top-tags"))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+
+        mockMvc.perform(asyncDispatch(mvcResult))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].tagName").value("tag1"))
                 .andExpect(jsonPath("$[0].tagCount").value(20));
@@ -128,9 +146,13 @@ class AnalyticsControllerTest {
     @Test
     @WithMockUser(authorities = "ROLE_ADMIN")
     void getAverageReviews_shouldReturnDouble() throws Exception {
-        when(analyticsService.getAverageReviewsPerPost()).thenReturn(3.5);
+        when(analyticsService.getAverageReviewsPerPost()).thenReturn(CompletableFuture.completedFuture(3.5));
 
-        mockMvc.perform(get("/api/v1/analytics/average-reviews"))
+        MvcResult mvcResult = mockMvc.perform(get("/api/v1/analytics/average-reviews"))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+
+        mockMvc.perform(asyncDispatch(mvcResult))
                 .andExpect(status().isOk())
                 .andExpect(content().string("3.5"));
     }

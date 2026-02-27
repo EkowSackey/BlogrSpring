@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/api/v1/analytics")
@@ -33,11 +34,12 @@ public class AnalyticsController {
             @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
     @GetMapping("/top-authors")
-    public ResponseEntity<List<AnalyticsService.AuthorStats>> getTopAuthors(
+    public CompletableFuture<ResponseEntity<List<AnalyticsService.AuthorStats>>> getTopAuthors(
             @Parameter(description = "Maximum number of authors to return")
             @RequestParam(defaultValue = "5") int limit
     ) {
-        return ResponseEntity.ok(analyticsService.getTopAuthors(limit));
+        return analyticsService.getTopAuthors(limit)
+                .thenApply(ResponseEntity::ok);
     }
 
     @Operation(summary = "Get total posts", description = "Retrieves the total number of posts in the blog")
@@ -46,8 +48,9 @@ public class AnalyticsController {
             @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
     @GetMapping("/total-posts")
-    public ResponseEntity<Long> getTotalPosts() {
-        return ResponseEntity.ok(analyticsService.getTotalPosts());
+    public CompletableFuture<ResponseEntity<Long>> getTotalPosts() {
+        return analyticsService.getTotalPosts()
+                .thenApply(ResponseEntity::ok);
     }
 
     @Operation(summary = "Get total users", description = "Retrieves the total number of registered users")
@@ -56,8 +59,9 @@ public class AnalyticsController {
             @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
     @GetMapping("/total-users")
-    public ResponseEntity<Long> getTotalUsers() {
-        return ResponseEntity.ok(analyticsService.getTotalUsers());
+    public CompletableFuture<ResponseEntity<Long>> getTotalUsers() {
+        return analyticsService.getTotalUsers()
+                .thenApply(ResponseEntity::ok);
     }
 
     @Operation(summary = "Get top tags", description = "Retrieves a list of the most popular tags and their counts")
@@ -67,11 +71,12 @@ public class AnalyticsController {
             @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
     @GetMapping("/top-tags")
-    public ResponseEntity<List<AnalyticsService.TagStats>> getTopTags(
+    public CompletableFuture<ResponseEntity<List<AnalyticsService.TagStats>>> getTopTags(
             @Parameter(description = "Maximum number of tags to return")
             @RequestParam(defaultValue = "5") int limit
     ) {
-        return ResponseEntity.ok(analyticsService.getTopTags(limit));
+        return analyticsService.getTopTags(limit)
+                .thenApply(ResponseEntity::ok);
     }
 
     @Operation(summary = "Get average reviews per post", description = "Calculates the average number of reviews per post")
@@ -80,7 +85,8 @@ public class AnalyticsController {
             @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
     @GetMapping("/average-reviews")
-    public ResponseEntity<Double> getAverageReviews() {
-        return ResponseEntity.ok(analyticsService.getAverageReviewsPerPost());
+    public CompletableFuture<ResponseEntity<Double>> getAverageReviews() {
+        return analyticsService.getAverageReviewsPerPost()
+                .thenApply(ResponseEntity::ok);
     }
 }

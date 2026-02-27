@@ -13,6 +13,7 @@ import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -35,7 +36,7 @@ class AnalyticsServiceTest {
     private AnalyticsService analyticsService;
 
     @Test
-    void getTopAuthors_shouldReturnAuthorStats() {
+    void getTopAuthors_shouldReturnAuthorStats() throws Exception {
         // Arrange
         int limit = 5;
         AnalyticsService.AuthorStats stats = new AnalyticsService.AuthorStats("author1", 10L);
@@ -48,7 +49,8 @@ class AnalyticsServiceTest {
                 .thenReturn(results);
 
         // Act
-        List<AnalyticsService.AuthorStats> result = analyticsService.getTopAuthors(limit);
+        CompletableFuture<List<AnalyticsService.AuthorStats>> future = analyticsService.getTopAuthors(limit);
+        List<AnalyticsService.AuthorStats> result = future.get();
 
         // Assert
         assertNotNull(result);
@@ -60,12 +62,13 @@ class AnalyticsServiceTest {
     }
 
     @Test
-    void getTotalPosts_shouldReturnCount() {
+    void getTotalPosts_shouldReturnCount() throws Exception {
         // Arrange
         when(postRepository.count()).thenReturn(100L);
 
         // Act
-        long result = analyticsService.getTotalPosts();
+        CompletableFuture<Long> future = analyticsService.getTotalPosts();
+        long result = future.get();
 
         // Assert
         assertEquals(100L, result);
@@ -73,12 +76,13 @@ class AnalyticsServiceTest {
     }
 
     @Test
-    void getTotalUsers_shouldReturnCount() {
+    void getTotalUsers_shouldReturnCount() throws Exception {
         // Arrange
         when(userRepository.count()).thenReturn(50L);
 
         // Act
-        long result = analyticsService.getTotalUsers();
+        CompletableFuture<Long> future = analyticsService.getTotalUsers();
+        long result = future.get();
 
         // Assert
         assertEquals(50L, result);
@@ -86,7 +90,7 @@ class AnalyticsServiceTest {
     }
 
     @Test
-    void getTopTags_shouldReturnTagStats() {
+    void getTopTags_shouldReturnTagStats() throws Exception {
         // Arrange
         int limit = 5;
         AnalyticsService.TagStats stats = new AnalyticsService.TagStats("tag1", 20L);
@@ -99,7 +103,8 @@ class AnalyticsServiceTest {
                 .thenReturn(results);
 
         // Act
-        List<AnalyticsService.TagStats> result = analyticsService.getTopTags(limit);
+        CompletableFuture<List<AnalyticsService.TagStats>> future = analyticsService.getTopTags(limit);
+        List<AnalyticsService.TagStats> result = future.get();
 
         // Assert
         assertNotNull(result);
@@ -111,7 +116,7 @@ class AnalyticsServiceTest {
     }
 
     @Test
-    void getAverageReviewsPerPost_shouldReturnAverage() {
+    void getAverageReviewsPerPost_shouldReturnAverage() throws Exception {
         // Arrange
         org.bson.Document doc = new org.bson.Document("averageReviews", 3.5);
         AggregationResults<org.bson.Document> results = new AggregationResults<>(
@@ -123,7 +128,8 @@ class AnalyticsServiceTest {
                 .thenReturn(results);
 
         // Act
-        double result = analyticsService.getAverageReviewsPerPost();
+        CompletableFuture<Double> future = analyticsService.getAverageReviewsPerPost();
+        double result = future.get();
 
         // Assert
         assertEquals(3.5, result);
@@ -131,7 +137,7 @@ class AnalyticsServiceTest {
     }
 
     @Test
-    void getAverageReviewsPerPost_shouldReturnZeroIfNoResults() {
+    void getAverageReviewsPerPost_shouldReturnZeroIfNoResults() throws Exception {
         // Arrange
         AggregationResults<org.bson.Document> results = new AggregationResults<>(
                 Collections.emptyList(),
@@ -142,7 +148,8 @@ class AnalyticsServiceTest {
                 .thenReturn(results);
 
         // Act
-        double result = analyticsService.getAverageReviewsPerPost();
+        CompletableFuture<Double> future = analyticsService.getAverageReviewsPerPost();
+        double result = future.get();
 
         // Assert
         assertEquals(0.0, result);

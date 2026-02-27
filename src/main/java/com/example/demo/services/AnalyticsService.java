@@ -10,12 +10,14 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.data.mongodb.core.aggregation.ConditionalOperators;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.*;
 
@@ -27,9 +29,10 @@ public class AnalyticsService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
 
+    @Async("taskExecutor")
     @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR')")
     @Transactional(readOnly = true)
-    public List<AuthorStats> getTopAuthors(int limit) {
+    public CompletableFuture<List<AuthorStats>> getTopAuthors(int limit) {
         Aggregation aggregation = newAggregation(
                 group("author").count().as("postCount"),
                 sort(Sort.Direction.DESC, "postCount"),
@@ -41,24 +44,27 @@ public class AnalyticsService {
                 aggregation, "posts", AuthorStats.class
         );
 
-        return results.getMappedResults();
+        return CompletableFuture.completedFuture(results.getMappedResults());
     }
 
+    @Async("taskExecutor")
     @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR')")
     @Transactional(readOnly = true)
-    public long getTotalPosts() {
-        return postRepository.count();
+    public CompletableFuture<Long> getTotalPosts() {
+        return CompletableFuture.completedFuture(postRepository.count());
     }
 
+    @Async("taskExecutor")
     @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR')")
     @Transactional(readOnly = true)
-    public long getTotalUsers() {
-        return userRepository.count();
+    public CompletableFuture<Long> getTotalUsers() {
+        return CompletableFuture.completedFuture(userRepository.count());
     }
 
+    @Async("taskExecutor")
     @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR')")
     @Transactional(readOnly = true)
-    public List<TagStats> getTopTags(int limit) {
+    public CompletableFuture<List<TagStats>> getTopTags(int limit) {
         Aggregation aggregation = newAggregation(
                 unwind("tagSlugs"),
                 group("tagSlugs").count().as("tagCount"),
@@ -71,12 +77,13 @@ public class AnalyticsService {
                 aggregation, "posts", TagStats.class
         );
 
-        return results.getMappedResults();
+        return CompletableFuture.completedFuture(results.getMappedResults());
     }
 
+    @Async("taskExecutor")
     @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR')")
     @Transactional(readOnly = true)
-    public double getAverageReviewsPerPost() {
+    public CompletableFuture<Double> getAverageReviewsPerPost() {
         Aggregation aggregation = newAggregation(
                 project()
                         .and(ConditionalOperators.ifNull("reviews").then(Collections.emptyList()))
@@ -94,15 +101,14 @@ public class AnalyticsService {
         org.bson.Document result = results.getUniqueMappedResult();
         
         if (result == null || !result.containsKey("averageReviews")) {
-            return 0.0;
+            return CompletableFuture.completedFuture(0.0);
         }
         
-        // Handle cases where avg might return a Decimal128 or Integer
         Object avg = result.get("averageReviews");
         if (avg instanceof Number) {
-            return ((Number) avg).doubleValue();
+            return CompletableFuture.completedFuture(((Number) avg).doubleValue());
         }
-        return 0.0;
+        return CompletableFuture.completedFuture(0.0);
     }
 
     @Data
