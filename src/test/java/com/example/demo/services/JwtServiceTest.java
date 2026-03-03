@@ -13,7 +13,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.security.Key;
+import javax.crypto.SecretKey;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class JwtServiceTest {
 
     private JwtService jwtService;
-    private Key signingKey;
+    private SecretKey signingKey;
     private UserDetails userDetails;
     private final long EXPIRATION = 86400000; // 24 hours
 
@@ -120,9 +120,9 @@ class JwtServiceTest {
     @Test
     void isTokenValid_shouldReturnFalse_whenTokenExpired() {
         String expiredToken = Jwts.builder()
-                .setSubject(userDetails.getUsername())
-                .setIssuedAt(new Date(System.currentTimeMillis() - 10000))
-                .setExpiration(new Date(System.currentTimeMillis() - 5000))
+                .subject(userDetails.getUsername())
+                .issuedAt(new Date(System.currentTimeMillis() - 10000))
+                .expiration(new Date(System.currentTimeMillis() - 5000))
                 .signWith(signingKey)
                 .compact();
 

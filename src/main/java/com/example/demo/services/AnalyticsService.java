@@ -12,7 +12,6 @@ import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.data.mongodb.core.aggregation.ConditionalOperators;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,9 +30,8 @@ public class AnalyticsService {
     private final UserRepository userRepository;
 
     @Async("taskExecutor")
-    @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR')")
     @Transactional(readOnly = true)
-    @Cacheable(value = "analytics-authors", key = "#limit")
+    @Cacheable(value = "analytics-authors", key = "#limit", cacheManager = "asyncCacheManager")
     public CompletableFuture<List<AuthorStats>> getTopAuthors(int limit) {
         Aggregation aggregation = newAggregation(
                 group("author").count().as("postCount"),
@@ -50,25 +48,22 @@ public class AnalyticsService {
     }
 
     @Async("taskExecutor")
-    @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR')")
     @Transactional(readOnly = true)
-    @Cacheable(value = "analytics-posts", key = "'total'")
+    @Cacheable(value = "analytics-posts", key = "'total'", cacheManager = "asyncCacheManager")
     public CompletableFuture<Long> getTotalPosts() {
         return CompletableFuture.completedFuture(postRepository.count());
     }
 
     @Async("taskExecutor")
-    @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR')")
     @Transactional(readOnly = true)
-    @Cacheable(value = "analytics-users", key = "'total'")
+    @Cacheable(value = "analytics-users", key = "'total'", cacheManager = "asyncCacheManager")
     public CompletableFuture<Long> getTotalUsers() {
         return CompletableFuture.completedFuture(userRepository.count());
     }
 
     @Async("taskExecutor")
-    @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR')")
     @Transactional(readOnly = true)
-    @Cacheable(value = "analytics-tags", key = "#limit")
+    @Cacheable(value = "analytics-tags", key = "#limit", cacheManager = "asyncCacheManager")
     public CompletableFuture<List<TagStats>> getTopTags(int limit) {
         Aggregation aggregation = newAggregation(
                 unwind("tagSlugs"),
@@ -86,9 +81,8 @@ public class AnalyticsService {
     }
 
     @Async("taskExecutor")
-    @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR')")
     @Transactional(readOnly = true)
-    @Cacheable(value = "analytics-reviews", key = "'avg'")
+    @Cacheable(value = "analytics-reviews", key = "'avg'", cacheManager = "asyncCacheManager")
     public CompletableFuture<Double> getAverageReviewsPerPost() {
         Aggregation aggregation = newAggregation(
                 project()
@@ -110,7 +104,6 @@ public class AnalyticsService {
             return CompletableFuture.completedFuture(0.0);
         }
         
-        // Handle cases where avg might return a Decimal128 or Integer
         Object avg = result.get("averageReviews");
         if (avg instanceof Number) {
             return CompletableFuture.completedFuture(((Number) avg).doubleValue());

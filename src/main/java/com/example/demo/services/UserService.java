@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -39,7 +40,10 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     @Transactional
-    @CacheEvict(value = {"users", "analytics-users"}, allEntries = true)
+    @Caching(evict = {
+            @CacheEvict(value = "users", allEntries = true),
+            @CacheEvict(value = "analytics-users", allEntries = true, cacheManager = "asyncCacheManager")
+    })
     public User registerUser(RegisterUserRequest request){
         String username = request.getUsername();
         if (userRepo.existsByUsername(username)) throw new DuplicateUsernameException("Username already taken");

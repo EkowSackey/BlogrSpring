@@ -1,6 +1,14 @@
 spring:
   application:
     name: blogr
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/blogr}
+      auto-index-creation: false # Disable auto-creation in production for better control
+      pool:
+        min-size: 10 # Maintain a minimum number of connections
+        max-size: 50 # Allow the pool to grow under load
+        max-idle-time: 60000 # 1 minute
   graphql:
     graphiql:
       enabled: true
@@ -23,10 +31,14 @@ spring:
               - email
               - profile
 
+server:
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/xml,text/plain,application/graphql
+
 logging:
   level:
     com.example.demo.aspect: DEBUG
-#    org.springframework.aop: DEBUG
 
 springdoc:
   packages-to-scan: com.example.demo.controllers

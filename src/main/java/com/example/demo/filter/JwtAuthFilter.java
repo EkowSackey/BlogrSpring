@@ -29,6 +29,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private final TokenBlacklistService tokenBlacklistService;
 
     @Override
+    protected boolean shouldNotFilterAsyncDispatch() {
+        // Ensure the filter runs during async dispatches to maintain SecurityContext
+        return false;
+    }
+
+    @Override
     protected void doFilterInternal(
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,

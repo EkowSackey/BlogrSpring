@@ -2,6 +2,7 @@ package com.example.demo.config;
 
 import com.example.demo.filter.JwtAuthFilter;
 import com.example.demo.services.CustomOAuth2UserService;
+import jakarta.servlet.DispatcherType;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -66,26 +67,29 @@ public class SecurityConfig {
         http.csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(httpRequest -> {
-                    // 1. Permit all public paths
+                    // 1. Explicitly authorize ASYNC dispatches for non-blocking controllers
+                    httpRequest.dispatcherTypeMatchers(DispatcherType.ASYNC).permitAll();
+
+                    // 2. Permit all public paths
                     httpRequest.requestMatchers(PUBLIC_PATHS).permitAll();
                     
-                    // 2. Explicitly allow logout for ANY authenticated user
+                    // 3. Explicitly allow logout for ANY authenticated user
                     httpRequest.requestMatchers("/api/v1/users/auth/logout").authenticated();
                     
-                    // 3. Admin only paths
+                    // 4. Admin only paths
                     httpRequest.requestMatchers(ADMIN_PATHS).hasRole("ADMIN");
                     
-                    // 4. Post modification (Admin or Author)
+                    // 5. Post modification (Admin or Author)
                     httpRequest.requestMatchers(HttpMethod.POST, POST_MODIFICATION_PATHS).hasAnyRole("ADMIN", "AUTHOR");
                     httpRequest.requestMatchers(HttpMethod.PUT, POST_MODIFICATION_PATHS).hasAnyRole("ADMIN", "AUTHOR");
                     httpRequest.requestMatchers(HttpMethod.DELETE, POST_MODIFICATION_PATHS).hasAnyRole("ADMIN", "AUTHOR");
 
-                    // 5. Comment creation (Admin, Author, or Reader)
+                    // 6. Comment creation (Admin, Author, or Reader)
                     httpRequest.requestMatchers(HttpMethod.POST, COMMENT_MODIFICATION_PATHS).hasAnyRole("ADMIN", "AUTHOR", "READER");
                     // Comment deletion (Admin or Author)
                     httpRequest.requestMatchers(HttpMethod.DELETE, COMMENT_MODIFICATION_PATHS).hasAnyRole("ADMIN", "AUTHOR");
                     
-                    // 6. All other requests must be authenticated
+                    // 7. All other requests must be authenticated
                     httpRequest.anyRequest().authenticated();
                 })
                 .sessionManagement(session ->

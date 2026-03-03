@@ -42,6 +42,7 @@ public class Post{
     @DocumentReference
     private List<Comment> comments;
 
+    @Indexed
     @TextIndexed
     private List<String> tagSlugs;
 

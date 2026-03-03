@@ -16,7 +16,11 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.TextCriteria;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -37,10 +41,14 @@ public class PostService {
 
 
     private final PostRepository postRepo;
+    private final MongoTemplate mongoTemplate;
 
     @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR')")
     @Transactional
-    @CacheEvict(value = {"post-pages", "analytics-posts", "analytics-authors", "analytics-tags"}, allEntries = true)
+    @Caching(evict = {
+            @CacheEvict(value = "post-pages", allEntries = true),
+            @CacheEvict(value = {"analytics-posts", "analytics-authors", "analytics-tags"}, allEntries = true, cacheManager = "asyncCacheManager")
+    })
     public Post createPost(CreatePostRequest request){
 
         List<String> tags = (request.getTags() == null) ? new ArrayList<>() : request.getTags();
@@ -108,7 +116,7 @@ public class PostService {
     @Transactional
     @Caching(evict = {
             @CacheEvict(value = "posts", key = "#id"),
-            @CacheEvict(value = {"analytics-tags"}, allEntries = true)
+            @CacheEvict(value = {"analytics-tags"}, allEntries = true, cacheManager = "asyncCacheManager")
     })
     public Post updatePost(String id, UpdatePostRequest request){
         Post post = getPostById(id);
@@ -124,8 +132,9 @@ public class PostService {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR', 'READER')")
     @Transactional
-    @CacheEvict(value = "analytics-reviews", allEntries = true)
+    @CacheEvict(value = "analytics-reviews", allEntries = true, cacheManager = "asyncCacheManager")
     public Post addReview(String id, ReviewRequest request){
+        // Fetch post to validate existence and author
         Post post = getPostById(id);
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -134,25 +143,37 @@ public class PostService {
         if (Objects.equals(post.getAuthor(), user)){
             throw new BadRequestException("Author cannot review their own post");
         }
-        
-        if (post.getReviews() == null) {
-            post.setReviews(new ArrayList<>());
-        }
-
-        List<Review> reviews = post.getReviews();
 
         Review review = new Review(request.getStars(), user, id);
-        reviews.add(review);
 
-        post.setReviews(reviews);
-        return postRepo.save(post);
+        // Use atomic update to push review to the array
+        // This avoids race conditions where multiple users review simultaneously
+        // and overwrite each other's updates
+        Query query = new Query(Criteria.where("postId").is(id));
+        Update update = new Update().push("reviews", review);
+        
+        // Find and modify returns the document *before* the update by default,
+        // but we want the updated document.
+        // Note: findAndModify is atomic.
+        Post updatedPost = mongoTemplate.findAndModify(
+                query,
+                update,
+                new org.springframework.data.mongodb.core.FindAndModifyOptions().returnNew(true),
+                Post.class
+        );
+        
+        if (updatedPost == null) {
+             throw new ResourceNotFoundException("Post not found with id: " + id);
+        }
+
+        return updatedPost;
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR')")
     @Transactional
     @Caching(evict = {
             @CacheEvict(value = "posts", key = "#id"),
-            @CacheEvict(value = {"analytics-posts", "analytics-authors", "analytics-tags", "analytics-reviews"}, allEntries = true)
+            @CacheEvict(value = {"analytics-posts", "analytics-authors", "analytics-tags", "analytics-reviews"}, allEntries = true, cacheManager = "asyncCacheManager")
     })
     public void deletePost(String id){
         Post post = getPostById(id);

@@ -18,7 +18,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.TextCriteria;
+import org.springframework.data.mongodb.core.query.UpdateDefinition;
 import org.mockito.ArgumentCaptor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -40,6 +43,9 @@ class PostServiceTest {
 
     @Mock
     private PostRepository postRepo;
+
+    @Mock
+    private MongoTemplate mongoTemplate;
 
     @InjectMocks
     private PostService postService;
@@ -279,8 +285,14 @@ class PostServiceTest {
         post.setAuthor("anotheruser");
         post.setReviews(new ArrayList<>());
 
+        Post updatedPost = new Post("Title", "Content", List.of());
+        updatedPost.setPostId(postId);
+        updatedPost.setAuthor("anotheruser");
+        updatedPost.setReviews(List.of(new com.example.demo.domain.Review(5, "testuser", postId)));
+
         when(postRepo.findPostByPostId(postId)).thenReturn(Optional.of(post));
-        when(postRepo.save(any(Post.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(mongoTemplate.findAndModify(any(Query.class), any(UpdateDefinition.class), any(), eq(Post.class)))
+                .thenReturn(updatedPost);
 
 
         Post result = postService.addReview(postId, request);
@@ -291,7 +303,7 @@ class PostServiceTest {
         assertEquals("testuser", result.getReviews().get(0).getUserId());
 
         verify(postRepo, times(1)).findPostByPostId(postId);
-        verify(postRepo, times(1)).save(any(Post.class));
+        verify(mongoTemplate, times(1)).findAndModify(any(Query.class), any(UpdateDefinition.class), any(), eq(Post.class));
     }
 
     @Test
@@ -316,7 +328,7 @@ class PostServiceTest {
 
         assertEquals("Author cannot review their own post", exception.getMessage());
         verify(postRepo, times(1)).findPostByPostId(postId);
-        verify(postRepo, never()).save(any(Post.class));
+        verify(mongoTemplate, never()).findAndModify(any(Query.class), any(UpdateDefinition.class), any(), eq(Post.class));
     }
 
     @Test
@@ -335,7 +347,7 @@ class PostServiceTest {
         );
 
         verify(postRepo, times(1)).findPostByPostId(postId);
-        verify(postRepo, never()).save(any(Post.class));
+        verify(mongoTemplate, never()).findAndModify(any(Query.class), any(UpdateDefinition.class), any(), eq(Post.class));
     }
 
     @Test
