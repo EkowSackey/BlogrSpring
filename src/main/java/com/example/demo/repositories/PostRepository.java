@@ -7,11 +7,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.query.TextCriteria;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
+import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
 @Repository
+@RepositoryRestResource(collectionResourceRel = "posts", path = "posts")
 public interface PostRepository extends MongoRepository<Post, String> {
 
     Optional<Post> findPostByPostId(String postId);
