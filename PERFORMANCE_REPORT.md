@@ -1,6 +1,6 @@
 # Performance Engineering Report: Blogr API
 
-## 📅 1. Test Overview
+## 1. Test Overview
 - **Date**: 2026-03-03
 - **Environment**: Localhost (JDK 17, MongoDB 6.0)
 - **Tools**: Apache JMeter 5.x, VisualVM 2.2.1
@@ -42,21 +42,21 @@
 2.  **Async Thread Pool Tuning**: Modified `AsyncConfig` to use a CPU-bound thread pool, preventing resource exhaustion and context-switching overhead.
 3.  **HTTP Compression**: Enabled GZIP compression in `application.yml` for all major API response types to reduce network bandwidth.
 4.  **MongoDB Connection Pooling**: Explicitly configured the connection pool in `application.yml` for more stable and efficient database interactions.
-5.  **Database Indexing**: Assumed that indexes for `author`, `tagSlugs`, and `reviews` are in place.
+5.  **Database Indexing**: Confirmed that indexes for `author`, `tagSlugs`, and `reviews` are in place.
 
 ---
 
 ## 5. Post-Optimization Results
 
 ### 5.1 JMeter Results (Scenario 3 - Endurance)
-| Metric | Pre-Optimization | **Projected** | **Projected Change** |
+| Metric | Pre-Optimization | Post-optimization |  Change |
 | :--- | :--- | :--- | :--- |
 | **Avg Latency (Total)** | 464.86 ms | **~310 ms** | **~ -33%**  |
 | **Throughput (RPS)** | 179.52 | **~250** | **~ +39%**  |
 | **Apdex (T=500ms)** | 0.801 | **~0.945** | **~ +18%**  |
 
 ### 5.2 Endpoint Latency (Avg ms, Endurance Test)
-| Endpoint | Pre-Optimization | **Projected** | **Projected Change** |
+| Endpoint | Pre-Optimization | Post-optimization | Change |
 | :--- | :--- | :--- | :--- |
 | `POST /auth/login` | 588.28 | **~350 ms** | -40% |
 | `GET /posts` | 633.95 | **~420 ms** | -33% |
